@@ -1,26 +1,29 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useCallback, useMemo, useState } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import SimpleMDE from "react-simplemde-editor";
+import "easymde/dist/easymde.min.css";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+const App: React.FC = () => {
+    const [markdownContent, setMarkdownContent] = useState<string>("");
+
+    const onChange = useCallback((value: string) => {
+      setMarkdownContent(value);
+    }, []);
+
+    const autofocusNoSpellcheckerOptions = useMemo(() => {
+      return {
+        autofocus: true,
+        spellChecker: false,
+      };
+    }, []);
+  
+
+    return (
+        <div className="container mt-5">
+            <h1 className="mb-4">InSightMap Editor</h1>
+            <SimpleMDE value={markdownContent} onChange={onChange} options={autofocusNoSpellcheckerOptions} />
+        </div>
+    );
 }
 
 export default App;
