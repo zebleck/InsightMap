@@ -6,6 +6,8 @@ import MarkdownEditor from "./MarkdownEditor";
 import { Button, Form, FormGroup } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { FaPlus, FaTrash, FaSave } from "react-icons/fa";
+import "./App.css";
 //import "katex/dist/katex.min.css";
 
 const App: React.FC = () => {
@@ -63,6 +65,27 @@ const App: React.FC = () => {
     });
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey) {
+        switch (String.fromCharCode(event.which).toLowerCase()) {
+          case "s":
+            event.preventDefault();
+            handleSave();
+            break;
+          default:
+            break;
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleSave]);
+
   return (
     <>
       <div className="container mt-5">
@@ -103,13 +126,13 @@ const App: React.FC = () => {
                 onClick={() => handleNew()}
                 className="mb-3"
               >
-                New
+                <FaPlus />
               </Button>
               <Button variant="danger" onClick={handleDelete} className="mb-3">
-                Delete
+                <FaTrash />
               </Button>
               <Button variant="primary" onClick={handleSave} className="mb-3">
-                Save
+                <FaSave />
               </Button>
             </div>
           </div>
