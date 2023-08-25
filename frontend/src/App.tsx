@@ -3,6 +3,9 @@ import "easymde/dist/easymde.min.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import MarkdownEditor from "./MarkdownEditor";
+import { Button, Form, FormGroup } from "react-bootstrap";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 //import "katex/dist/katex.min.css";
 
 const App: React.FC = () => {
@@ -21,6 +24,7 @@ const App: React.FC = () => {
       .then(() => {
         // Refresh saved files after saving
         axios.get("/files").then((response) => setSavedFiles(response.data));
+        toast.success("Saved!");
       });
   };
 
@@ -40,6 +44,9 @@ const App: React.FC = () => {
   };
 
   const handleDelete = () => {
+    const confirmed = window.confirm("Are you sure you want to delete?");
+    if (!confirmed) return;
+
     axios.delete(`/files/${currentFile}`).then(() => {
       setCurrentFile("");
       setMarkdownContent("");
@@ -57,65 +64,59 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="container mt-5">
-      <div className="row">
-        <div className="col-md-3">
-          <h4>Saved Files</h4>
-          {savedFiles.map((filename) => (
-            <ul key={filename}>
-              <li>
-                <a href="#!" onClick={() => loadFile(filename)}>
-                  {filename}
-                </a>
-              </li>
-            </ul>
-          ))}
-        </div>
-        <div className="col-md-9">
-          <h4>{currentFile}</h4>
-          <MarkdownEditor
-            markdownContent={markdownContent}
-            setMarkdownContent={setMarkdownContent}
-            handleNew={handleNew}
-          />
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="d-flex align-items-center">
-              <label htmlFor="fileNameInput" className="form-label me-2">
-                File name
-              </label>
-              <input
-                type="text" // Change this to "text" since it's a file name input
-                className="form-control"
-                id="fileNameInput"
-                placeholder=""
-                value={currentFile}
-                onChange={(e) => setCurrentFile(e.target.value)}
-              />
-            </div>
-            <div className="d-flex align-items-center">
-              <button
+    <>
+      <div className="container mt-5">
+        <div className="row">
+          <div className="col-md-2">
+            <h4>Saved Files</h4>
+            {savedFiles.map((filename) => (
+              <ul key={filename}>
+                <li>
+                  <a href="#!" onClick={() => loadFile(filename)}>
+                    {filename}
+                  </a>
+                </li>
+              </ul>
+            ))}
+          </div>
+          <div className="col-md-8">
+            <h4>{currentFile}</h4>
+            <MarkdownEditor
+              markdownContent={markdownContent}
+              setMarkdownContent={setMarkdownContent}
+              handleNew={handleNew}
+            />
+          </div>
+          <div className="col-md-2">
+            <div className="d-flex flex-column">
+              <FormGroup className="mb-3">
+                <Form.Label>Filename</Form.Label>
+                <Form.Control
+                  type="filename"
+                  placeholder="Enter filename"
+                  value={currentFile}
+                  onChange={(e) => setCurrentFile(e.target.value)}
+                />
+              </FormGroup>
+              <Button
+                variant="warning"
                 onClick={() => handleNew()}
-                className="btn btn-warning mt-2 me-2"
+                className="mb-3"
               >
                 New
-              </button>
-              <button
-                onClick={handleDelete}
-                className="btn btn-danger mt-2 me-2"
-              >
+              </Button>
+              <Button variant="danger" onClick={handleDelete} className="mb-3">
                 Delete
-              </button>
-              <button
-                onClick={handleSave}
-                className="btn btn-primary mt-2 me-2"
-              >
+              </Button>
+              <Button variant="primary" onClick={handleSave} className="mb-3">
                 Save
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       </div>
-    </div>
+      <ToastContainer position="bottom-left" autoClose={2000} />
+    </>
   );
 };
 
