@@ -24,6 +24,19 @@ const App: React.FC = () => {
       });
   };
 
+  const handleNew = () => {
+    setCurrentFile("");
+    setMarkdownContent("");
+  };
+
+  const handleDelete = () => {
+    axios.delete(`/files/${currentFile}`).then(() => {
+      setCurrentFile("");
+      setMarkdownContent("");
+      axios.get("/files").then((response) => setSavedFiles(response.data));
+    });
+  };
+
   const loadFile = (filename: string) => {
     axios.get(`/files/${filename}`).then((response) => {
       if (response.data.success) {
@@ -39,11 +52,13 @@ const App: React.FC = () => {
         <div className="col-md-3">
           <h4>Saved Files</h4>
           {savedFiles.map((filename) => (
-            <div key={filename}>
-              <a href="#!" onClick={() => loadFile(filename)}>
-                {filename}
-              </a>
-            </div>
+            <ul key={filename}>
+              <li>
+                <a href="#!" onClick={() => loadFile(filename)}>
+                  {filename}
+                </a>
+              </li>
+            </ul>
           ))}
         </div>
         <div className="col-md-9">
@@ -67,9 +82,23 @@ const App: React.FC = () => {
                 onChange={(e) => setCurrentFile(e.target.value)}
               />
             </div>
-            <button onClick={handleSave} className="btn btn-primary mt-2 me-2">
-              Save
-            </button>
+            <div className="d-flex align-items-center">
+              <button onClick={handleNew} className="btn btn-warning mt-2 me-2">
+                New
+              </button>
+              <button
+                onClick={handleDelete}
+                className="btn btn-danger mt-2 me-2"
+              >
+                Delete
+              </button>
+              <button
+                onClick={handleSave}
+                className="btn btn-primary mt-2 me-2"
+              >
+                Save
+              </button>
+            </div>
           </div>
         </div>
       </div>

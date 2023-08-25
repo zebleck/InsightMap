@@ -27,6 +27,21 @@ app.post('/save/:filename', (req, res) => {
   });
 });
 
+app.delete('/files/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(filesDir, filename);
+
+  fs.unlink(filePath, (err) => {
+    if (err) {
+      console.error(err);
+      res.status(500).json({ success: false });
+    } else {
+      res.json({ success: true });
+    }
+  });
+});
+
+
 app.get('/files', (req, res) => {
   fs.readdir(filesDir, (err, filenames) => {
     if (err) {
