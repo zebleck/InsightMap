@@ -1,0 +1,22 @@
+version: '3'
+services:
+  frontend:
+    image: node:latest
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    command: bash -c "npm install && npm start"
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+
+  backend:
+    build: ./backend
+    working_dir: /app
+    ports:
+      - '5000:5000'
+    environment:
+      - NODE_ENV=development
+
