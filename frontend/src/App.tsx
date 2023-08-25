@@ -16,10 +16,12 @@ const App: React.FC = () => {
   }, []);
 
   const handleSave = () => {
-    axios.post(`/save/${currentFile}`, { content: markdownContent }).then(() => {
-      // Refresh saved files after saving
-      axios.get("/files").then((response) => setSavedFiles(response.data));
-    });
+    axios
+      .post(`/save/${currentFile}`, { content: markdownContent })
+      .then(() => {
+        // Refresh saved files after saving
+        axios.get("/files").then((response) => setSavedFiles(response.data));
+      });
   };
 
   const loadFile = (filename: string) => {
@@ -52,24 +54,23 @@ const App: React.FC = () => {
             handleSave={handleSave}
           />
           <div className="d-flex justify-content-between align-items-center">
-  <div className="d-flex align-items-center">
-    <label htmlFor="fileNameInput" className="form-label me-2">
-      File name
-    </label>
-    <input
-      type="text" // Change this to "text" since it's a file name input
-      className="form-control"
-      id="fileNameInput"
-      placeholder=""
-      value={currentFile}
-      onChange={(e) => setCurrentFile(e.target.value)}
-    />
-  </div>
-  <button onClick={handleSave} className="btn btn-primary mt-2 me-2">
-    Save
-  </button>
-</div>
-
+            <div className="d-flex align-items-center">
+              <label htmlFor="fileNameInput" className="form-label me-2">
+                File name
+              </label>
+              <input
+                type="text" // Change this to "text" since it's a file name input
+                className="form-control"
+                id="fileNameInput"
+                placeholder=""
+                value={currentFile}
+                onChange={(e) => setCurrentFile(e.target.value)}
+              />
+            </div>
+            <button onClick={handleSave} className="btn btn-primary mt-2 me-2">
+              Save
+            </button>
+          </div>
         </div>
       </div>
     </div>
