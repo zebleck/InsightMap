@@ -24,9 +24,19 @@ const App: React.FC = () => {
       });
   };
 
-  const handleNew = () => {
-    setCurrentFile("");
-    setMarkdownContent("");
+  const handleNew = (fileName?: string) => {
+    if (fileName) {
+      axios
+        .post(`/save/${currentFile}`, { content: markdownContent })
+        .then(() => {
+          axios.get("/files").then((response) => setSavedFiles(response.data));
+          setCurrentFile(fileName);
+          setMarkdownContent("");
+        });
+    } else {
+      setCurrentFile("");
+      setMarkdownContent("");
+    }
   };
 
   const handleDelete = () => {
@@ -66,7 +76,7 @@ const App: React.FC = () => {
           <MarkdownEditor
             markdownContent={markdownContent}
             setMarkdownContent={setMarkdownContent}
-            handleSave={handleSave}
+            handleNew={handleNew}
           />
           <div className="d-flex justify-content-between align-items-center">
             <div className="d-flex align-items-center">
@@ -83,7 +93,10 @@ const App: React.FC = () => {
               />
             </div>
             <div className="d-flex align-items-center">
-              <button onClick={handleNew} className="btn btn-warning mt-2 me-2">
+              <button
+                onClick={() => handleNew()}
+                className="btn btn-warning mt-2 me-2"
+              >
                 New
               </button>
               <button

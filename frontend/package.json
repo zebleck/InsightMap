@@ -19,6 +19,7 @@
     "markdown-it": "^13.0.1",
     "markdown-it-katex": "^2.0.3",
     "react": "^18.2.0",
+    "react-bootstrap": "^2.8.0",
     "react-dom": "^18.2.0",
     "react-katex": "^3.0.1",
     "react-markdown": "^8.0.7",
