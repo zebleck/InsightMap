@@ -81,13 +81,19 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
           setPosition(null);
         }
       },
-      mousedown: (cm: any) => {
-        cm.on("mouseup", () => {
-          console.log("HI");
-        });
-      },
     };
   }, []);
+
+  /*md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+    const token = tokens[idx];
+    const href = token.attrGet("href");
+
+    if (href && href.startsWith("local:")) {
+      token.attrSet("href", `local:${href}`);
+    }
+
+    return self.renderToken(tokens, idx, options);
+  };*/
 
   return (
     <>

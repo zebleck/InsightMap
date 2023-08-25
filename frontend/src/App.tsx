@@ -10,6 +10,12 @@ import { FaPlus, FaTrash, FaSave } from "react-icons/fa";
 import "./App.css";
 //import "katex/dist/katex.min.css";
 
+const sanitizeFilename = (fileName: string) => {
+  return fileName
+    .replace(/ /g, "-") // Replace spaces with underscores
+    .replace(/[^a-zA-Z0-9_-]/g, ""); // Remove special characters except for underscores and dashes
+};
+
 const App: React.FC = () => {
   const [currentFile, setCurrentFile] = useState<string>("");
   const [markdownContent, setMarkdownContent] = useState<string>("");
@@ -36,7 +42,7 @@ const App: React.FC = () => {
         .post(`/save/${currentFile}`, { content: markdownContent })
         .then(() => {
           axios.get("/files").then((response) => setSavedFiles(response.data));
-          setCurrentFile(fileName);
+          setCurrentFile(sanitizeFilename(fileName));
           setMarkdownContent("");
         });
     } else {
@@ -85,6 +91,20 @@ const App: React.FC = () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [handleSave]);
+
+  useEffect(() => {
+    document.addEventListener("click", (e) => {
+      const el = e.target as any;
+      if (el.tagName === "A") {
+        const href = el.getAttribute("href");
+        if (href && href.startsWith("local:")) {
+          e.preventDefault();
+          const filename = href.replace("local:", "");
+          loadFile(filename); // Call your `loadFile` function
+        }
+      }
+    });
+  }, []);
 
   return (
     <>
@@ -138,7 +158,7 @@ const App: React.FC = () => {
           </div>
         </div>
       </div>
-      <ToastContainer position="bottom-left" autoClose={2000} />
+      <ToastContainer position="bottom-left" autoClose={2500} />
     </>
   );
 };

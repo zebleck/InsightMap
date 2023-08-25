@@ -14,7 +14,7 @@ if (!fs.existsSync(filesDir)) {
 
 app.post('/save/:filename', (req, res) => {
   const { content } = req.body;
-  const filename = req.params.filename;
+  const filename = req.params.filename + '.md';
   const filePath = path.join(filesDir, filename);
 
   fs.writeFile(filePath, content, (err) => {
@@ -29,7 +29,7 @@ app.post('/save/:filename', (req, res) => {
 
 app.delete('/files/:filename', (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join(filesDir, filename);
+  const filePath = path.join(filesDir, filename) + '.md';
 
   fs.unlink(filePath, (err) => {
     if (err) {
@@ -49,13 +49,14 @@ app.get('/files', (req, res) => {
       res.status(500).json([]);
       return;
     }
-    res.json(filenames);
+    const strippedFilenames = filenames.map(name => name.replace('.md', ''));
+    res.json(strippedFilenames);
   });
 });
 
 app.get('/files/:filename', (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join(filesDir, filename);
+  const filePath = path.join(filesDir, filename) + '.md';
 
   fs.readFile(filePath, 'utf8', (err, content) => {
     if (err) {
