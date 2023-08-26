@@ -1,6 +1,5 @@
 const express = require('express');
 const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const app = express();
 const port = 5000;
@@ -14,7 +13,7 @@ if (!fs.existsSync(filesDir)) {
 
 app.post('/save/:filename', (req, res) => {
   const { content } = req.body;
-  const filename = req.params.filename + '.md';
+  const filename = req.params.filename;
   const filePath = path.join(filesDir, filename);
 
   fs.writeFile(filePath, content, (err) => {
@@ -29,7 +28,7 @@ app.post('/save/:filename', (req, res) => {
 
 app.delete('/files/:filename', (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join(filesDir, filename) + '.md';
+  const filePath = path.join(filesDir, filename);
 
   fs.unlink(filePath, (err) => {
     if (err) {
@@ -49,15 +48,14 @@ app.get('/files', (req, res) => {
       res.status(500).json([]);
       return;
     }
-    const strippedFilenames = filenames.map(name => name.replace('.md', ''));
-    res.json(strippedFilenames);
+    res.json(filenames);
   });
 });
 
 app.get('/files/:filename', (req, res) => {
   const filename = req.params.filename;
-  const filePath = path.join(filesDir, filename) + '.md';
-
+  const filePath = path.join(filesDir, filename);
+  
   fs.readFile(filePath, 'utf8', (err, content) => {
     if (err) {
       console.error(err);

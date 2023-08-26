@@ -84,16 +84,16 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     };
   }, []);
 
-  /*md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+  md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
     const token = tokens[idx];
     const href = token.attrGet("href");
 
-    if (href && href.startsWith("local:")) {
+    if (href && !href.startsWith("https://")) {
       token.attrSet("href", `local:${href}`);
     }
 
     return self.renderToken(tokens, idx, options);
-  };*/
+  };
 
   return (
     <>

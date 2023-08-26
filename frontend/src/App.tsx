@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "easymde/dist/easymde.min.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
-import MarkdownEditor from "./MarkdownEditor";
+import MarkdownEditor from "./components/MarkdownEditor";
 import { Button, Form, FormGroup } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -11,9 +11,7 @@ import "./App.css";
 //import "katex/dist/katex.min.css";
 
 const sanitizeFilename = (fileName: string) => {
-  return fileName
-    .replace(/ /g, "-") // Replace spaces with underscores
-    .replace(/[^a-zA-Z0-9_-]/g, ""); // Remove special characters except for underscores and dashes
+  return fileName.replace(/[^a-zA-Z0-9_ -]/g, "");
 };
 
 const App: React.FC = () => {
@@ -99,8 +97,8 @@ const App: React.FC = () => {
         const href = el.getAttribute("href");
         if (href && href.startsWith("local:")) {
           e.preventDefault();
-          const filename = href.replace("local:", "");
-          loadFile(filename); // Call your `loadFile` function
+          const filename = decodeURI(href.replace("local:", ""));
+          loadFile(filename);
         }
       }
     });
