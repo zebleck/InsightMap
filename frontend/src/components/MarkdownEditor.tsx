@@ -3,38 +3,21 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import SimpleMDE from "react-simplemde-editor";
 import mk from "markdown-it-katex";
 import "katex/dist/katex.min.css";
-import { Button } from "react-bootstrap";
-
-const NewButton: React.FC<{
-  selection: string;
-  position: { left: number; top: number } | null;
-  handleNew: (fileName?: string) => void;
-}> = ({ selection, position, handleNew }) => {
-  return (
-    <Button
-      variant="warning"
-      onClick={() => handleNew(selection)}
-      style={{
-        position: "absolute",
-        left: `${position ? position.left : 0}px`,
-        top: `${position ? position.top : 0}px`,
-      }}
-    >
-      New
-    </Button>
-  );
-};
+import SelectionCard from "./SelectionCard";
+import "./MarkdownEditor.css";
 
 type MarkdownEditorProps = {
   markdownContent: string;
   setMarkdownContent: (value: string) => void;
   handleNew: (fileName?: string) => void;
+  handleTree: (fileName?: string) => void;
 };
 
 const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
   markdownContent,
   setMarkdownContent,
   handleNew,
+  handleTree,
 }) => {
   const simpleMDERef = useRef<any>(null);
   const [selection, setSelection] = useState<string | null>(null);
@@ -68,9 +51,13 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       cursorActivity: (cm: any) => {
         const selectedText = cm.getSelection();
         if (selectedText) {
-          const coordinates = cm.cursorCoords(false, "window"); // 'false' gives the end position
+          const coordinates = cm.cursorCoords(false, "page"); // 'false' gives the end position
+
           setSelection(selectedText);
-          setPosition({ left: coordinates.left, top: coordinates.top + 20 }); // +20 to place it below
+          setPosition({
+            left: coordinates.left,
+            top: coordinates.top + 20,
+          }); // +20 to place it below
 
           setShowButton(false);
           setTimeout(() => {
@@ -103,12 +90,14 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
         onChange={onChange}
         options={options}
         events={events}
+        className="markdown-editor"
       />
       {showButton && selection && (
-        <NewButton
+        <SelectionCard
           selection={selection}
           position={position}
           handleNew={handleNew}
+          handleTree={handleTree}
         />
       )}
     </>

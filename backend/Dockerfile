@@ -1,10 +1,9 @@
-FROM node:latest
+FROM python:3.9
 
 WORKDIR /app
 
 COPY . .
 
-RUN npm install -g nodemon
-RUN npm install
+RUN pip install -r requirements.txt
 
-CMD ["nodemon", "index.js"]
+CMD ["gunicorn", "-k", "gevent", "-w", "1", "-b", ":5000", "app:app"]

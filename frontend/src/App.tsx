@@ -21,15 +21,21 @@ const App: React.FC = () => {
 
   useEffect(() => {
     // Fetch saved files when the component mounts
-    axios.get("/files").then((response) => setSavedFiles(response.data));
+    axios
+      .get("http://localhost:5000/files")
+      .then((response) => setSavedFiles(response.data));
   }, []);
 
   const handleSave = () => {
     axios
-      .post(`/save/${currentFile}`, { content: markdownContent })
+      .post(`http://localhost:5000/save/${currentFile}`, {
+        content: markdownContent,
+      })
       .then(() => {
         // Refresh saved files after saving
-        axios.get("/files").then((response) => setSavedFiles(response.data));
+        axios
+          .get("http://localhost:5000/files")
+          .then((response) => setSavedFiles(response.data));
         toast.success("Saved!");
       });
   };
@@ -37,10 +43,14 @@ const App: React.FC = () => {
   const handleNew = (fileName?: string) => {
     if (fileName) {
       axios
-        .post(`/save/${currentFile}`, { content: markdownContent })
+        .post(`http://localhost:5000/save/${currentFile}`, {
+          content: markdownContent,
+        })
         .then(() => {
-          axios.get("/files").then((response) => setSavedFiles(response.data));
-          setCurrentFile(sanitizeFilename(fileName));
+          axios
+            .get("http://localhost:5000/files")
+            .then((response) => setSavedFiles(response.data));
+          setCurrentFile(sanitizeFilename(fileName) + ".md");
           setMarkdownContent("");
         });
     } else {
@@ -49,11 +59,69 @@ const App: React.FC = () => {
     }
   };
 
+  const handleTree = (selection) => {
+    let generatedText = "";
+
+    axios
+      .post(`http://localhost:5000/save/${currentFile}`, {
+        content: markdownContent,
+      })
+      .then(() => {
+        axios
+          .get("http://localhost:5000/files")
+          .then((response) => setSavedFiles(response.data));
+        setCurrentFile(sanitizeFilename(selection) + ".md");
+        setMarkdownContent("");
+      });
+
+    axios
+      .post("http://localhost:5000/generate_tree", { selection: selection })
+      .then((response) => {
+        // Initialize the EventSource with the correct URL for SSE (Server-Sent Events)
+
+        if ("EventSource" in window) {
+          console.log("HÄ");
+        }
+
+        const eventSource = new EventSource(
+          `http://localhost:5000/generate_tree_sse?session_id=${response.data.session_id}`,
+        );
+
+        console.log("EventSource", eventSource);
+
+        eventSource.onmessage = function (event) {
+          if (event.data === "__complete__") {
+            // Handle your completion logic here.
+            eventSource.close();
+            axios
+              .post(`/save/${selection}.md`, { content: generatedText })
+              .then(() => {
+                axios
+                  .get("/files")
+                  .then((response) => setSavedFiles(response.data));
+              });
+            return;
+          }
+          console.log("New message", event.data);
+          generatedText += event.data;
+          setMarkdownContent(generatedText);
+        };
+
+        eventSource.onerror = function (error) {
+          console.error("EventSource failed:", error);
+          eventSource.close();
+        };
+      })
+      .catch((error) => {
+        console.error("Error initializing tree generation:", error);
+      });
+  };
+
   const handleDelete = () => {
     const confirmed = window.confirm("Are you sure you want to delete?");
     if (!confirmed) return;
 
-    axios.delete(`/files/${currentFile}`).then(() => {
+    axios.delete(`http://localhost:5000/files/${currentFile}`).then(() => {
       setCurrentFile("");
       setMarkdownContent("");
       axios.get("/files").then((response) => setSavedFiles(response.data));
@@ -61,7 +129,7 @@ const App: React.FC = () => {
   };
 
   const loadFile = (filename: string) => {
-    axios.get(`/files/${filename}`).then((response) => {
+    axios.get(`http://localhost:5000/files/${filename}`).then((response) => {
       if (response.data.success) {
         setCurrentFile(filename);
         setMarkdownContent(response.data.content);
@@ -126,6 +194,7 @@ const App: React.FC = () => {
               markdownContent={markdownContent}
               setMarkdownContent={setMarkdownContent}
               handleNew={handleNew}
+              handleTree={handleTree}
             />
           </div>
           <div className="col-md-2">
