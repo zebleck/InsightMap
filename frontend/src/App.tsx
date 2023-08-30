@@ -78,11 +78,6 @@ const App: React.FC = () => {
       .post("http://localhost:5000/generate_tree", { selection: selection })
       .then((response) => {
         // Initialize the EventSource with the correct URL for SSE (Server-Sent Events)
-
-        if ("EventSource" in window) {
-          console.log("HÄ");
-        }
-
         const eventSource = new EventSource(
           `http://localhost:5000/generate_tree_sse?session_id=${response.data.session_id}`,
         );
@@ -102,8 +97,9 @@ const App: React.FC = () => {
               });
             return;
           }
-          console.log("New message", event.data);
-          generatedText += event.data;
+
+          generatedText += event.data.replace(/<br>/g, "\n");
+          console.log("EventSource message", event.data);
           setMarkdownContent(generatedText);
         };
 
@@ -124,7 +120,9 @@ const App: React.FC = () => {
     axios.delete(`http://localhost:5000/files/${currentFile}`).then(() => {
       setCurrentFile("");
       setMarkdownContent("");
-      axios.get("/files").then((response) => setSavedFiles(response.data));
+      axios
+        .get("http://localhost:5000/files")
+        .then((response) => setSavedFiles(response.data));
     });
   };
 
