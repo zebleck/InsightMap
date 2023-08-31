@@ -2,7 +2,6 @@ import MarkdownIt from "markdown-it";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import SimpleMDE from "react-simplemde-editor";
 import mk from "markdown-it-katex";
-import "katex/dist/katex.min.css";
 import SelectionCard from "./SelectionCard";
 import "./MarkdownEditor.css";
 
