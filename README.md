@@ -7,7 +7,7 @@ A web application that allows users to organize knowledge. It uses generative AI
 - 📝 Integrated Markdown Editor
 - 📁 File management system integrated with the Editor
 - 🤖 Integration of generative AI
-- 🌲 Tree of Abstraction Generation: Generate abstract representations of selected text.
+- 🌲 Tree of Abstraction Generation: Generate abstract representations of selected text
 
 ## Tech Stack
 
@@ -18,10 +18,15 @@ A web application that allows users to organize knowledge. It uses generative AI
 
 ## Installation & Setup
 
+1. Clone repository
+   ```bash
+   git clone https://github.com/zebleck/InSightMap.git
+   ```
 1. Navigate to the backend folder and create a .env file with your OpenAI API key
    ```bash
    cd backend
-   echo "OPENAI_KEY=your_openai_api_key" > .env```
+   echo "OPENAI_KEY=your_openai_api_key" > .env
+   ```
 3. In the root folder, build and start the docker container
    ```bash
    cd ..
