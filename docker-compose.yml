@@ -1,5 +1,16 @@
 version: '3'
 services:
+  graphdb:
+    image: neo4j:latest
+    ports:
+      - '7474:7474'
+      - '7687:7687'
+    volumes:
+      - $HOME/neo4j/data:/neo4j/data
+      - $HOME/neo4j/logs:/neo4j/logs
+    environment:
+      - NEO4J_AUTH=neo4j/password
+
   frontend:
     image: node:latest
     working_dir: /app
