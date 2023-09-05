@@ -107,8 +107,8 @@ def generate_tree_endpoint():
     session_store[session_id] = generate_tree_func(selection)
     return jsonify({"session_id": session_id, "selection": selection})
 
-@app.route('/generate_tree_sse')
-def generate_tree_sse():
+@app.route('/request_sse')
+def request_sse():
     headers = {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
