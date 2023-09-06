@@ -1,84 +1,53 @@
-import React, { useEffect, useState } from "react";
-import "easymde/dist/easymde.min.css";
-import "bootstrap/dist/css/bootstrap.min.css";
+import React, { useEffect } from "react";
 import axios from "axios";
 import MarkdownEditor from "../components/MarkdownEditor";
 import { Button, Form, FormGroup } from "react-bootstrap";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 import { FaPlus, FaTrash, FaSave } from "react-icons/fa";
 import "./Main.css";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchFiles,
+  fetchFile,
+  newFile,
+  saveFile,
+  deleteFile,
+  setCurrentFile,
+  setMarkdownContent,
+} from "../store/fileSlice";
+import { AppDispatch } from "../store/store";
 
-const sanitizeFilename = (fileName: string) => {
-  return fileName.replace(/[^a-zA-Z0-9_ -]/g, "");
-};
+const server = "http://localhost:5000";
 
 const Main: React.FC = () => {
-  const [currentFile, setCurrentFile] = useState<string>("");
-  const [markdownContent, setMarkdownContent] = useState<string>("");
-  const [savedFiles, setSavedFiles] = useState<string[]>([]);
+  const dispatch: AppDispatch = useDispatch();
+  const { currentFile, markdownContent, savedFiles } = useSelector(
+    (state: any) => state.files,
+  );
 
   useEffect(() => {
-    // Fetch saved files when the component mounts
-    axios
-      .get("http://localhost:5000/files")
-      .then((response) => setSavedFiles(response.data));
+    dispatch(fetchFiles());
   }, []);
 
   const handleSave = () => {
-    axios
-      .post(`http://localhost:5000/save/${currentFile}`, {
-        content: markdownContent,
-      })
-      .then(() => {
-        // Refresh saved files after saving
-        axios
-          .get("http://localhost:5000/files")
-          .then((response) => setSavedFiles(response.data));
-        toast.success("Saved!");
-      });
+    dispatch(saveFile({ fileName: currentFile, content: markdownContent }));
   };
 
   const handleNew = (fileName?: string) => {
-    if (fileName) {
-      axios
-        .post(`http://localhost:5000/save/${currentFile}`, {
-          content: markdownContent,
-        })
-        .then(() => {
-          axios
-            .get("http://localhost:5000/files")
-            .then((response) => setSavedFiles(response.data));
-          setCurrentFile(sanitizeFilename(fileName) + ".md");
-          setMarkdownContent("");
-        });
-    } else {
-      setCurrentFile("");
-      setMarkdownContent("");
-    }
+    dispatch(newFile(fileName));
   };
 
   const handleTree = (selection) => {
     let generatedText = "";
 
-    axios
-      .post(`http://localhost:5000/save/${currentFile}`, {
-        content: markdownContent,
-      })
-      .then(() => {
-        axios
-          .get("http://localhost:5000/files")
-          .then((response) => setSavedFiles(response.data));
-        setCurrentFile(sanitizeFilename(selection) + ".md");
-        setMarkdownContent("");
-      });
+    dispatch(newFile(selection));
 
     axios
-      .post("http://localhost:5000/generate_tree", { selection: selection })
+      .post(`${server}/generate_tree`, { selection: selection })
       .then((response) => {
         // Initialize the EventSource with the correct URL for SSE (Server-Sent Events)
         const eventSource = new EventSource(
-          `http://localhost:5000/generate_tree_sse?session_id=${response.data.session_id}`,
+          `${server}/request_sse?session_id=${response.data.session_id}`,
         );
 
         console.log("EventSource", eventSource);
@@ -87,13 +56,7 @@ const Main: React.FC = () => {
           if (event.data === "__complete__") {
             // Handle your completion logic here.
             eventSource.close();
-            axios
-              .post(`/save/${selection}.md`, { content: generatedText })
-              .then(() => {
-                axios
-                  .get("/files")
-                  .then((response) => setSavedFiles(response.data));
-              });
+            dispatch(setMarkdownContent(generatedText));
             return;
           }
 
@@ -115,23 +78,11 @@ const Main: React.FC = () => {
   const handleDelete = () => {
     const confirmed = window.confirm("Are you sure you want to delete?");
     if (!confirmed) return;
-
-    axios.delete(`http://localhost:5000/files/${currentFile}`).then(() => {
-      setCurrentFile("");
-      setMarkdownContent("");
-      axios
-        .get("http://localhost:5000/files")
-        .then((response) => setSavedFiles(response.data));
-    });
+    dispatch(deleteFile(currentFile));
   };
 
-  const loadFile = (filename: string) => {
-    axios.get(`http://localhost:5000/files/${filename}`).then((response) => {
-      if (response.data.success) {
-        setCurrentFile(filename);
-        setMarkdownContent(response.data.content);
-      }
-    });
+  const handleLoadFile = (filename: string) => {
+    dispatch(fetchFile(filename));
   };
 
   useEffect(() => {
@@ -163,7 +114,7 @@ const Main: React.FC = () => {
         if (href && href.startsWith("local:")) {
           e.preventDefault();
           const filename = decodeURI(href.replace("local:", ""));
-          loadFile(filename);
+          handleLoadFile(filename);
         }
       }
     });
@@ -178,7 +129,7 @@ const Main: React.FC = () => {
             {savedFiles.map((filename) => (
               <ul key={filename}>
                 <li>
-                  <a href="#!" onClick={() => loadFile(filename)}>
+                  <a href="#!" onClick={() => handleLoadFile(filename)}>
                     {filename}
                   </a>
                 </li>
@@ -202,7 +153,7 @@ const Main: React.FC = () => {
                   type="filename"
                   placeholder="Enter filename"
                   value={currentFile}
-                  onChange={(e) => setCurrentFile(e.target.value)}
+                  onChange={(e) => dispatch(setCurrentFile(e.target.value))}
                 />
               </FormGroup>
               <Button
