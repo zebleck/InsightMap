@@ -6,6 +6,9 @@ import logging
 from dotenv import load_dotenv
 from flask_cors import CORS
 import uuid
+from neo4j import GraphDatabase
+uri = "bolt://graphdb:7687"
+driver = GraphDatabase.driver(uri, auth=("neo4j", "password"))
 load_dotenv()
 
 app = Flask(__name__)
@@ -16,54 +19,35 @@ try:
 except:
   logging.warning("Unable to set OpenAI API Key and Organization")
 
-FILES_DIR = "files"
-if not os.path.exists(FILES_DIR):
-  os.makedirs(FILES_DIR)
-
 @app.route('/save/<filename>', methods=['POST'])
 def save_file(filename):
   content = request.json.get("content")
-  file_path = os.path.join(FILES_DIR, filename)
-  
-  try:
-    with open(file_path, 'w') as f:
-      f.write(content)
-    return jsonify(success=True, filename=filename)
-  except Exception as e:
-    print(e)
-    return jsonify(success=False), 500
+  with driver.session() as session:
+    session.run("MERGE (f:File {name: $name}) SET f.content = $content", name=filename, content=content)
+  return jsonify(success=True, filename=filename)
 
 @app.route('/files/<filename>', methods=['DELETE'])
 def delete_file(filename):
-  file_path = os.path.join(FILES_DIR, filename)
-  
-  try:
-    os.remove(file_path)
-    return jsonify(success=True)
-  except Exception as e:
-    print(e)
-    return jsonify(success=False), 500
+  with driver.session() as session:
+    session.run("MATCH (f:File {name: $name}) DETACH DELETE f", name=filename)
+  return jsonify(success=True)
 
 @app.route('/files', methods=['GET'])
 def list_files():
-  try:
-    filenames = os.listdir(FILES_DIR)
-    return jsonify(filenames)
-  except Exception as e:
-    print(e)
-    return jsonify([]), 500
+  with driver.session() as session:
+    result = session.run("MATCH (f:File) RETURN f.name as name")
+    filenames = [record['name'] for record in result]
+  return jsonify(filenames)
 
 @app.route('/files/<filename>', methods=['GET'])
 def read_file(filename):
-  file_path = os.path.join(FILES_DIR, filename)
-  
-  try:
-    with open(file_path, 'r') as f:
-      content = f.read()
-    return jsonify(success=True, content=content)
-  except Exception as e:
-    print(e)
-    return jsonify(success=False), 404
+  with driver.session() as session:
+    result = session.run("MATCH (f:File {name: $name}) RETURN f.content as content", name=filename)
+    content = result.single()['content'] if result.single() else None
+    if content:
+      return jsonify(success=True, content=content)
+    else:
+      return jsonify(success=False), 404
   
 def generate_tree_func(selection):
   prompt = f"Perform a multi-dimensional analysis of {selection} by constructing a Tree of Abstraction. Start from the immediate, tangible actions and delve into deeper layers of complexity, adapting your approach as needed to capture the unique aspects of this activity. Your analysis may include, but is not limited to, the biological, psychological, social, technological, economic, and philosophical dimensions. Provide a comprehensive and insightful exploration, and identify intersections between different layers of abstraction where relevant. Return in markdown."
