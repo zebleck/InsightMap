@@ -26,15 +26,18 @@
 }
 
 .button-left,
-.button-right {
+.button-right,
+.button-inbetween {
   flex: 1;
-  padding: 0.5rem;
+  padding-top: 0.2rem;
+  padding-bottom: 0.5rem;
   font-size: 1.2rem;
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
 .button-left:hover,
-.button-right:hover {
+.button-right:hover,
+.button-inbetween:hover {
   background-color: #f0f0f0;
 }
 
@@ -46,8 +49,13 @@
   border-radius: 0 0px 12px 0;
 }
 
+.button-inbetween {
+  border-radius: 0;
+}
+
 .button-left .react-icons,
-.button-right .react-icons {
+.button-right .react-icons,
+.button-inbetween .react-icons {
   vertical-align: middle;
   margin-right: 0.2rem;
 }

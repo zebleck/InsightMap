@@ -14,6 +14,7 @@ const App: React.FC = () => {
       <Router>
         <Routes>
           <Route path="/" element={<Main />} />
+          <Route path="/:filename" element={<Main />} />
           <Route path="/graph" element={<Graph />} />
         </Routes>
       </Router>

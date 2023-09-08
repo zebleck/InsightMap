@@ -47,7 +47,7 @@ export const newFile = createAsyncThunk(
       });
 
       await dispatch(fetchFiles());
-      return fileName + ".md";
+      return fileName;
     }
     return "";
   },

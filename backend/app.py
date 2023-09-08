@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify, Response
 import os
-import json
 import openai
 import logging
 from dotenv import load_dotenv
 from flask_cors import CORS
 import uuid
+import re
 from neo4j import GraphDatabase
 uri = "bolt://graphdb:7687"
 driver = GraphDatabase.driver(uri, auth=("neo4j", "password"))
@@ -22,8 +22,29 @@ except:
 @app.route('/save/<filename>', methods=['POST'])
 def save_file(filename):
   content = request.json.get("content")
+
+  # Regex to match your specific format of links
+  linked_nodes = re.findall(r'\[([^\]]+)]\(\<node:([^\>]+)\>\)', content)
+  unique_linked_nodes = list(set(node[1] for node in linked_nodes))
+  if len(unique_linked_nodes) > 0:
+    logging.warn("Linking %s to: %s", filename, unique_linked_nodes)
+  else:
+    logging.warn("No linked nodes found for %s", filename)
+
   with driver.session() as session:
+    # First update the content of the file
     session.run("MERGE (f:File {name: $name}) SET f.content = $content", name=filename, content=content)
+
+    # Delete all existing relationships to start afresh
+    session.run("MATCH (f:File {name: $name})-[r:LINKS_TO]->() DELETE r", name=filename)
+
+    # Create relationships
+    for linked_node in unique_linked_nodes:
+        session.run("""
+            MATCH (f:File {name: $filename})
+            MERGE (t:File {name: $linked_node})
+            MERGE (f)-[:LINKS_TO]->(t)
+        """, filename=filename, linked_node=linked_node)
   return jsonify(success=True, filename=filename)
 
 @app.route('/files/<filename>', methods=['DELETE'])
@@ -43,8 +64,9 @@ def list_files():
 def read_file(filename):
   with driver.session() as session:
     result = session.run("MATCH (f:File {name: $name}) RETURN f.content as content", name=filename)
-    content = result.single()['content'] if result.single() else None
-    if content:
+    single = result.single()
+    content = single['content'] if single else None
+    if content is not None:
       return jsonify(success=True, content=content)
     else:
       return jsonify(success=False), 404

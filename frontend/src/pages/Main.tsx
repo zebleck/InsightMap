@@ -16,10 +16,13 @@ import {
   setMarkdownContent,
 } from "../store/fileSlice";
 import { AppDispatch } from "../store/store";
+import { useNavigate, useParams } from "react-router-dom";
 
 const server = "http://localhost:5000";
 
 const Main: React.FC = () => {
+  const navigate = useNavigate();
+  const { filename } = useParams();
   const dispatch: AppDispatch = useDispatch();
   const { currentFile, markdownContent, savedFiles } = useSelector(
     (state: any) => state.files,
@@ -33,8 +36,9 @@ const Main: React.FC = () => {
     dispatch(saveFile({ fileName: currentFile, content: markdownContent }));
   };
 
-  const handleNew = (fileName?: string) => {
-    dispatch(newFile(fileName));
+  const handleNew = () => {
+    dispatch(newFile(""));
+    navigate("/");
   };
 
   const handleTree = (selection) => {
@@ -62,7 +66,7 @@ const Main: React.FC = () => {
 
           generatedText += event.data.replace(/<br>/g, "\n");
           console.log("EventSource message", event.data);
-          setMarkdownContent(generatedText);
+          dispatch(setMarkdownContent(generatedText));
         };
 
         eventSource.onerror = function (error) {
@@ -81,9 +85,13 @@ const Main: React.FC = () => {
     dispatch(deleteFile(currentFile));
   };
 
-  const handleLoadFile = (filename: string) => {
-    dispatch(fetchFile(filename));
-  };
+  useEffect(() => {
+    if (filename) {
+      dispatch(fetchFile(filename));
+    } else {
+      handleNew();
+    }
+  }, [filename]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -111,14 +119,18 @@ const Main: React.FC = () => {
       const el = e.target as any;
       if (el.tagName === "A") {
         const href = el.getAttribute("href");
-        if (href && href.startsWith("local:")) {
-          e.preventDefault();
-          const filename = decodeURI(href.replace("local:", ""));
-          handleLoadFile(filename);
+        if (href && href.startsWith("node:")) {
+          const filename = decodeURI(href.replace("node:", ""));
+          handleLoad(e, filename);
         }
       }
     });
   }, []);
+
+  const handleLoad = (e, filename) => {
+    e.preventDefault();
+    navigate(`/${filename}`);
+  };
 
   return (
     <>
@@ -129,7 +141,7 @@ const Main: React.FC = () => {
             {savedFiles.map((filename) => (
               <ul key={filename}>
                 <li>
-                  <a href="#!" onClick={() => handleLoadFile(filename)}>
+                  <a href="" onClick={(e) => handleLoad(e, filename)}>
                     {filename}
                   </a>
                 </li>
@@ -138,12 +150,7 @@ const Main: React.FC = () => {
           </div>
           <div className="col-md-8">
             <h4>{currentFile}</h4>
-            <MarkdownEditor
-              markdownContent={markdownContent}
-              setMarkdownContent={setMarkdownContent}
-              handleNew={handleNew}
-              handleTree={handleTree}
-            />
+            <MarkdownEditor handleTree={handleTree} />
           </div>
           <div className="col-md-2">
             <div className="d-flex flex-column">
@@ -156,11 +163,7 @@ const Main: React.FC = () => {
                   onChange={(e) => dispatch(setCurrentFile(e.target.value))}
                 />
               </FormGroup>
-              <Button
-                variant="warning"
-                onClick={() => handleNew()}
-                className="mb-3"
-              >
+              <Button variant="warning" onClick={handleNew} className="mb-3">
                 <FaPlus />
               </Button>
               <Button variant="danger" onClick={handleDelete} className="mb-3">
