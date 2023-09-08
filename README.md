@@ -41,4 +41,4 @@ Feel free to submit pull requests or create issues to improve the project.
 
 ## License
 
-See [License.md](License.md)
+See [LICENSE.md](LICENSE.md)
