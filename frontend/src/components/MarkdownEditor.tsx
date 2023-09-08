@@ -4,30 +4,27 @@ import SimpleMDE from "react-simplemde-editor";
 import mk from "markdown-it-katex";
 import SelectionCard from "./SelectionCard";
 import "./MarkdownEditor.css";
+import { setMarkdownContent } from "../store/fileSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "../store/store";
 
 type MarkdownEditorProps = {
-  markdownContent: string;
-  setMarkdownContent: (value: string) => void;
-  handleNew: (fileName?: string) => void;
   handleTree: (fileName?: string) => void;
 };
 
-const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
-  markdownContent,
-  setMarkdownContent,
-  handleNew,
-  handleTree,
-}) => {
+const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ handleTree }) => {
+  const dispatch: AppDispatch = useDispatch();
   const simpleMDERef = useRef<any>(null);
   const [selection, setSelection] = useState<string | null>(null);
   const [position, setPosition] = useState<{
     left: number;
     top: number;
   } | null>(null);
-  const [showButton, setShowButton] = useState(false);
+
+  const { markdownContent } = useSelector((state: any) => state.files);
 
   const onChange = useCallback((value: string) => {
-    setMarkdownContent(value);
+    dispatch(setMarkdownContent(value));
   }, []);
 
   const md = new MarkdownIt();
@@ -45,6 +42,11 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
     };
   }, []);
 
+  const [codemirrorInstance, setCodemirrorInstance] = useState(null);
+  const getCmInstanceCallback = useCallback((editor) => {
+    setCodemirrorInstance(editor);
+  }, []);
+
   const events = useMemo(() => {
     return {
       cursorActivity: (cm: any) => {
@@ -52,16 +54,14 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
         if (selectedText) {
           const coordinates = cm.cursorCoords(false, "page"); // 'false' gives the end position
 
-          setSelection(selectedText);
           setPosition({
             left: coordinates.left,
             top: coordinates.top + 20,
           }); // +20 to place it below
 
-          setShowButton(false);
           setTimeout(() => {
-            setShowButton(true);
-          }, 1000);
+            setSelection(selectedText);
+          }, 200);
         } else {
           setSelection(null);
           setPosition(null);
@@ -69,17 +69,6 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       },
     };
   }, []);
-
-  md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
-    const token = tokens[idx];
-    const href = token.attrGet("href");
-
-    if (href && !href.startsWith("https://")) {
-      token.attrSet("href", `local:${href}`);
-    }
-
-    return self.renderToken(tokens, idx, options);
-  };
 
   return (
     <>
@@ -90,15 +79,14 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
         options={options}
         events={events}
         className="markdown-editor"
+        getCodemirrorInstance={getCmInstanceCallback}
       />
-      {showButton && selection && (
-        <SelectionCard
-          selection={selection}
-          position={position}
-          handleNew={handleNew}
-          handleTree={handleTree}
-        />
-      )}
+      <SelectionCard
+        selection={selection}
+        position={position}
+        handleTree={handleTree}
+        codeMirrorInstance={codemirrorInstance}
+      />
     </>
   );
 };

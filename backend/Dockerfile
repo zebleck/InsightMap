@@ -6,4 +6,4 @@ COPY . .
 
 RUN pip install -r requirements.txt
 
-CMD ["gunicorn", "-k", "gevent", "-w", "1", "-b", ":5000", "app:app"]
+CMD ["/app/run_dev_server.sh"]
