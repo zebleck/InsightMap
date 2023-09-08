@@ -1,17 +1,17 @@
 # 🧠 InSightMap
 
-A web application that allows users to organize knowledge. It uses generative AI to make documenting and collecting knowledge easier in an intuitive way.
+InSightMap is a knowledge management platform that seamlessly integrates a vast array of information into an easily navigable graph-like structure. Built with a focus on usability, InSightMap lets you capture, link, and traverse complex ideas and topics, enabling you to see the bigger picture. Equipped with dynamic navigation and a rich Markdown editor, the platform provides an interactive and user-friendly experience.
 
 ## Features
 
-- 📝 Integrated Markdown Editor
-- 📁 File management system integrated with the Editor
-- 🤖 Integration of generative AI
-- 🌲 Tree of Abstraction Generation: Generate abstract representations of selected text
+- 📝 **Integrated Markdown Editor**: Features a fully-equipped Markdown editor that supports LaTeX for mathematical expressions, allowing you to document topics in a stylistically versatile and mathematical format.
+- 🌐 **Graph-Based Knowledge Management**: Utilizing Neo4j, the backend supports dynamic linking of nodes, representing different pieces of information or ideas.
+- ⭐ **User-Focused Design**: From easy node linking to two-way automatic linking between nodes and dynamic navigation, InSightMap aims for an intuitive and frictionless user experience.
+- 🤖 **Integration of generative AI**: Generate abstract representations of selected text through the use of generative AI
 
 ## Tech Stack
 
-- Backend: Python
+- Backend: Python + Neo4J
 - Frontend: React.js
 - Styling: Bootstrap
 - Markdown Rendering: `markdown-it`, `react-simplemde-editor`, `markdown-it-katex`
@@ -38,3 +38,7 @@ A web application that allows users to organize knowledge. It uses generative AI
 ## Contributing
 
 Feel free to submit pull requests or create issues to improve the project.
+
+## License
+
+See [License.md](License.md)
