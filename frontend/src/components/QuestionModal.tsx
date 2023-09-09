@@ -4,6 +4,7 @@ import { Button, Modal, Form } from "react-bootstrap";
 const QuestionModal = ({ show, handleClose, handleSubmit, topic }) => {
   const [question, setQuestion] = useState("");
   const inputRef = useRef(null);
+  const [createNew, setCreateNew] = useState(false);
 
   useEffect(() => {
     if (show && inputRef.current) {
@@ -23,7 +24,7 @@ const QuestionModal = ({ show, handleClose, handleSubmit, topic }) => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    handleSubmit(question);
+    handleSubmit(question, createNew);
     setQuestion("");
     handleClose();
   };
@@ -47,6 +48,12 @@ const QuestionModal = ({ show, handleClose, handleSubmit, topic }) => {
               onKeyDown={handleKeyDown}
             />
           </Form.Group>
+          <Form.Check
+            type="checkbox"
+            label="Answer in new node"
+            checked={createNew}
+            onChange={(e) => setCreateNew(e.target.checked)}
+          />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>

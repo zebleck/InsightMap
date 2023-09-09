@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
-import { Button, Modal } from "react-bootstrap";
+import { Button, Form, Modal } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import Select from "react-select";
 
@@ -8,6 +8,7 @@ const LinkingModal = ({ show, handleClose, handleSubmit }) => {
   const { nodes } = useSelector((state: any) => state.graph);
   const selectRef = useRef(null);
   const [selectedNode, setSelectedNode] = useState(null);
+  const [linkAll, setLinkAll] = useState(false);
 
   useEffect(() => {
     if (selectRef.current) {
@@ -17,7 +18,7 @@ const LinkingModal = ({ show, handleClose, handleSubmit }) => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    handleSubmit(selectedNode.label);
+    handleSubmit(selectedNode.label, linkAll);
     setSelectedNode(null);
     handleClose();
   };
@@ -40,6 +41,13 @@ const LinkingModal = ({ show, handleClose, handleSubmit }) => {
             onChange={(node) => setSelectedNode(node)}
             ref={selectRef}
             autoFocus
+            className="mb-3"
+          />
+          <Form.Check
+            type="checkbox"
+            label="Link all"
+            checked={linkAll}
+            onChange={(e) => setLinkAll(e.target.checked)}
           />
         </Modal.Body>
         <Modal.Footer>

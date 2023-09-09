@@ -36,11 +36,11 @@
 }
 
 .new {
-  background-color: #D4F5E2;
-  color: #0D5E37;
+  background-color: #E0D4FF;
+  color: #7B4DBF;
 }
 .new:hover {
-  background-color: #C3E9D0;
+  background-color: #D2C4F6;
 }
 
 .link {
@@ -52,20 +52,29 @@
 }
 
 .tree {
-  background-color: #EADAD1;
-  color: #6E3B0D;
+  background-color: #D4F5E2;
+  color: #0D5E37;
 }
 .tree:hover {
-  background-color: #E0C9B8;
+  background-color: #C3E9D0;
 }
 
 .ask {
-  background-color: #FEE6D2;
-  color: #D46A0D;
+  background-color: #FAD7A0;
+  color: #AF601A;
 }
 .ask:hover {
-  background-color: #FDDCB8;
+  background-color: #F5CBA7;
 }
+
+.remove {
+  background-color: #FADBD8;
+  color: #D43A1B;
+}
+.remove:hover {
+  background-color: #F5B7B1;
+}
+
 
 .button-left {
   border-radius: 0px 0 0 12px;

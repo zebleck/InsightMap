@@ -91,6 +91,7 @@ const Main: React.FC = () => {
   const handleLoad = (e, nodeName) => {
     e.preventDefault();
     navigate(`/${nodeName}`);
+    dispatch(fetchNode(nodeName));
   };
 
   return (

@@ -1,5 +1,11 @@
 import MarkdownIt from "markdown-it";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import SimpleMDE from "react-simplemde-editor";
 import mk from "markdown-it-katex";
 import SelectionCard from "./SelectionCard";
@@ -16,31 +22,119 @@ const MarkdownEditor = () => {
     left: number;
     top: number;
   } | null>(null);
+  const [areNodeLinksHighlighted, setAreNodeLinksHighlighted] = useState(true);
 
   const { markdownContent } = useSelector((state: any) => state.graph);
 
   const onChange = useCallback((value: string) => {
     dispatch(setMarkdownContent(value));
+    if (codemirrorInstance) {
+      codemirrorInstance.refresh();
+    }
   }, []);
 
   const md = new MarkdownIt();
   md.use(mk);
 
-  const renderMarkdown = (text: string) => {
-    return md.render(text);
+  const setMarkdownRenderer = (highlightLinks) => {
+    md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+      const hrefIndex = tokens[idx].attrIndex("href");
+      if (hrefIndex >= 0) {
+        const hrefAttr = tokens[idx].attrs[hrefIndex];
+        if (hrefAttr && hrefAttr[1].startsWith("node:")) {
+          if (highlightLinks) {
+            tokens[idx].attrPush(["class", "knowledge-node-link"]);
+          } else tokens[idx].attrPush(["class", "knowledge-node-link-hidden"]);
+        }
+      }
+      return self.renderToken(tokens, idx, options);
+    };
   };
+
+  setMarkdownRenderer(areNodeLinksHighlighted);
+
+  const renderMarkdown = useRef<(text: string) => string>((text: string) => {
+    return md.render(text);
+  });
+
+  useEffect(() => {
+    renderMarkdown.current = (text: string) => {
+      return md.render(text);
+    };
+  }, [areNodeLinksHighlighted]);
+
+  const toggleNodeLinksRef = useRef<() => void>(() => {});
+
+  const [codemirrorInstance, setCodemirrorInstance] = useState(null);
+  const getCmInstanceCallback = useCallback((editor) => {
+    setCodemirrorInstance(editor);
+  }, []);
+
+  useEffect(() => {
+    toggleNodeLinksRef.current = () => {
+      setAreNodeLinksHighlighted((prevValue) => {
+        const newValue = !prevValue;
+
+        const toolbarButton = document.querySelector(".toggleNodeHighlights");
+
+        if (toolbarButton) {
+          if (newValue) {
+            toolbarButton.classList.add("on"); // Highlight when active
+          } else {
+            toolbarButton.classList.remove("on"); // Reset to default when not active
+          }
+        }
+
+        const newContent = markdownContent + " ";
+        dispatch(setMarkdownContent(newContent));
+        setTimeout(() => {
+          dispatch(setMarkdownContent(markdownContent.trim()));
+        }, 10);
+
+        if (codemirrorInstance) {
+          codemirrorInstance.refresh();
+        }
+
+        return newValue;
+      });
+    };
+  }, [markdownContent]);
 
   const options = useMemo(() => {
     return {
       autofocus: true,
       spellChecker: false,
-      previewRender: renderMarkdown,
+      previewRender: (text) => {
+        return renderMarkdown.current(text);
+      },
+      toolbar: [
+        "bold",
+        "italic",
+        "heading",
+        "|",
+        "quote",
+        "unordered-list",
+        "ordered-list",
+        "|",
+        "link",
+        "image",
+        "|",
+        "preview",
+        "side-by-side",
+        "fullscreen",
+        "|",
+        {
+          name: "toggleNodeHighlights",
+          action: () => {
+            toggleNodeLinksRef.current();
+          },
+          className: "fa fa-sitemap no-disable on",
+          title: "Toggle Node Highlights",
+        } as any,
+        "|",
+        "guide",
+      ],
     };
-  }, []);
-
-  const [codemirrorInstance, setCodemirrorInstance] = useState(null);
-  const getCmInstanceCallback = useCallback((editor) => {
-    setCodemirrorInstance(editor);
   }, []);
 
   const events = useMemo(() => {
@@ -53,7 +147,7 @@ const MarkdownEditor = () => {
           setPosition({
             left: coordinates.left,
             top: coordinates.top + 20,
-          }); // +20 to place it below
+          });
 
           setTimeout(() => {
             setSelection(selectedText);
@@ -68,15 +162,17 @@ const MarkdownEditor = () => {
 
   return (
     <>
-      <SimpleMDE
-        ref={simpleMDERef}
-        value={markdownContent}
-        onChange={onChange}
-        options={options}
-        events={events}
-        className="markdown-editor"
-        getCodemirrorInstance={getCmInstanceCallback}
-      />
+      <div className="editor-container">
+        <SimpleMDE
+          ref={simpleMDERef}
+          value={markdownContent}
+          onChange={onChange}
+          options={options}
+          events={events}
+          className="markdown-editor"
+          getCodemirrorInstance={getCmInstanceCallback}
+        />
+      </div>
       <SelectionCard
         selection={selection}
         position={position}

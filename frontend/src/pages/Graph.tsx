@@ -33,7 +33,19 @@ const Graph: React.FC = () => {
       edges: edges,
     };
 
-    const options = {};
+    const options = {
+      physics: {
+        stabilization: false,
+        barnesHut: {
+          gravitationalConstant: -2000,
+          centralGravity: 0.5,
+          springLength: 95,
+          springConstant: 0.04,
+          damping: 0.09,
+          avoidOverlap: 0.1,
+        },
+      },
+    };
 
     if (container) {
       const network = new Network(container, data, options);

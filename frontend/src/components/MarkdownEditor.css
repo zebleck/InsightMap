@@ -4,3 +4,30 @@
   margin-bottom: 2rem;
   border-radius: 12px !important;
 }
+
+.knowledge-node-link {
+  color: #4CAF50; /* Green text */
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.knowledge-node-link:hover {
+	text-decoration: underline;
+}
+
+.knowledge-node-link-hidden {
+  color: #000000; /* Green text */
+  text-decoration: none;
+}
+
+.knowledge-node-link-hidden:hover {
+	text-decoration: underline;
+}
+
+.editor-container {
+  position: relative;
+}
+
+.toggleNodeHighlights.on {
+  color: #39803b!important;
+}
