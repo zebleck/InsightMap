@@ -18,13 +18,17 @@ const NodeList = ({ handleLoad }) => {
     setSearchTerm(event.target.value);
   };
 
-  const filteredConnectedNodes = connectedNodes.filter((node) =>
-    node.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  console.log(nodes);
 
-  const filteredNodes = nodes.filter((node) =>
-    node.label.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredConnectedNodes = connectedNodes
+    .filter((node) => node.toLowerCase().includes(searchTerm.toLowerCase()))
+    ?.sort((a, b) => a.localeCompare(b));
+
+  const filteredNodes = nodes
+    .filter((node) =>
+      node.label.toLowerCase().includes(searchTerm.toLowerCase()),
+    )
+    ?.sort((a, b) => a.label.localeCompare(b.label));
 
   if (nodeName && !filteredConnectedNodes.length) {
     return (
