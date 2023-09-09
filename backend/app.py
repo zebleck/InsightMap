@@ -42,7 +42,8 @@ def save_file(filename):
     for linked_node in unique_linked_nodes:
         session.run("""
             MATCH (f:File {name: $filename})
-            MERGE (t:File {name: $linked_node})
+            WITH f
+            MATCH (t:File {name: $linked_node})
             MERGE (f)-[:LINKS_TO]->(t)
         """, filename=filename, linked_node=linked_node)
   return jsonify(success=True, filename=filename)

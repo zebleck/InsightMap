@@ -27,3 +27,5 @@ yarn-error.log*
 backend/.venv
 
 .env
+
+neo4j
