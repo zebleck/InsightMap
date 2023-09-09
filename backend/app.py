@@ -19,52 +19,86 @@ try:
 except:
   logging.warning("Unable to set OpenAI API Key and Organization")
 
-@app.route('/save/<filename>', methods=['POST'])
-def save_file(filename):
+@app.route('/graph/saveNode/<nodename>', methods=['POST'])
+def save_node(nodename):
   content = request.json.get("content")
 
   # Regex to match your specific format of links
   linked_nodes = re.findall(r'\[([^\]]+)]\(\<node:([^\>]+)\>\)', content)
   unique_linked_nodes = list(set(node[1] for node in linked_nodes))
   if len(unique_linked_nodes) > 0:
-    logging.warn("Linking %s to: %s", filename, unique_linked_nodes)
+    logging.warn("Linking %s to: %s", nodename, unique_linked_nodes)
   else:
-    logging.warn("No linked nodes found for %s", filename)
+    logging.warn("No linked nodes found for %s", nodename)
 
   with driver.session() as session:
-    # First update the content of the file
-    session.run("MERGE (f:File {name: $name}) SET f.content = $content", name=filename, content=content)
+    # First update the content of the node
+    session.run("MERGE (f:KnowledgeNode {name: $name}) SET f.content = $content", name=nodename, content=content)
 
     # Delete all existing relationships to start afresh
-    session.run("MATCH (f:File {name: $name})-[r:LINKS_TO]->() DELETE r", name=filename)
+    session.run("MATCH (f:KnowledgeNode {name: $name})-[r:LINKS_TO]->() DELETE r", name=nodename)
 
     # Create relationships
     for linked_node in unique_linked_nodes:
         session.run("""
-            MATCH (f:File {name: $filename})
+            MATCH (f:KnowledgeNode {name: $nodename})
             WITH f
-            MATCH (t:File {name: $linked_node})
+            MATCH (t:KnowledgeNode {name: $linked_node})
             MERGE (f)-[:LINKS_TO]->(t)
-        """, filename=filename, linked_node=linked_node)
-  return jsonify(success=True, filename=filename)
+        """, nodename=nodename, linked_node=linked_node)
+  return jsonify(success=True, nodename=nodename)
 
-@app.route('/files/<filename>', methods=['DELETE'])
-def delete_file(filename):
+@app.route('/graph/<nodename>', methods=['DELETE'])
+def delete_node(nodename):
   with driver.session() as session:
-    session.run("MATCH (f:File {name: $name}) DETACH DELETE f", name=filename)
+    session.run("MATCH (f:KnowledgeNode {name: $name}) DETACH DELETE f", name=nodename)
   return jsonify(success=True)
 
-@app.route('/files', methods=['GET'])
-def list_files():
+@app.route('/graph', methods=['GET'])
+def fetch_graph():
   with driver.session() as session:
-    result = session.run("MATCH (f:File) RETURN f.name as name")
-    filenames = [record['name'] for record in result]
-  return jsonify(filenames)
+    result = session.run("""
+      MATCH (n)
+      OPTIONAL MATCH (n)-[r]->(m)
+      RETURN n, type(r) as relType, m
+    """)
+    
+    nodes = []
+    edges = []
 
-@app.route('/files/<filename>', methods=['GET'])
-def read_file(filename):
+    node_ids = set()
+    
+    for record in result:
+      start_node_id = record["n"].id
+      start_node = {"id": start_node_id, "label": record["n"].get("name")}
+
+      if start_node_id not in node_ids:
+        nodes.append(start_node)
+        node_ids.add(start_node_id)
+
+      end_node = record["m"]
+      if end_node:
+        end_node_id = end_node.id
+        end_node_data = {"id": end_node_id, "label": end_node.get("name")}
+
+        if end_node_id not in node_ids:
+          nodes.append(end_node_data)
+          node_ids.add(end_node_id)
+
+        relation = {
+          "from": start_node_id,
+          "to": end_node_id,
+          "label": record["relType"]
+        }
+
+        edges.append(relation)
+
+    return jsonify({"nodes": nodes, "edges": edges})
+
+@app.route('/graph/<nodename>', methods=['GET'])
+def read_node(nodename):
   with driver.session() as session:
-    result = session.run("MATCH (f:File {name: $name}) RETURN f.content as content", name=filename)
+    result = session.run("MATCH (f:KnowledgeNode {name: $name}) RETURN f.content as content", name=nodename)
     single = result.single()
     content = single['content'] if single else None
     if content is not None:
@@ -127,6 +161,7 @@ def request_sse():
         return Response(generator_function(), headers=headers)
     else:
         return "Session not found", 404
+
 
 if __name__ == '__main__':
   app.run(host="0.0.0.0", port=5000)

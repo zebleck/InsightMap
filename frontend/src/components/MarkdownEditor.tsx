@@ -4,12 +4,12 @@ import SimpleMDE from "react-simplemde-editor";
 import mk from "markdown-it-katex";
 import SelectionCard from "./SelectionCard";
 import "./MarkdownEditor.css";
-import { setMarkdownContent } from "../store/fileSlice";
+import { setMarkdownContent } from "../store/graphSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store/store";
 
 type MarkdownEditorProps = {
-  handleTree: (fileName?: string) => void;
+  handleTree: (nodeName?: string) => void;
 };
 
 const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ handleTree }) => {
@@ -21,7 +21,7 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ handleTree }) => {
     top: number;
   } | null>(null);
 
-  const { markdownContent } = useSelector((state: any) => state.files);
+  const { markdownContent } = useSelector((state: any) => state.graph);
 
   const onChange = useCallback((value: string) => {
     dispatch(setMarkdownContent(value));

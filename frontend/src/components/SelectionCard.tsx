@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Card, Modal, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { FaLink, FaPlus, FaTree } from "react-icons/fa";
+import { FaLink, FaPlus, FaQuestion, FaTree } from "react-icons/fa";
 import "./SelectionCard.css";
 import { useDispatch, useSelector } from "react-redux";
 import Select from "react-select";
-import { saveFile } from "../store/fileSlice";
+import { saveNode } from "../store/graphSlice";
 import { AppDispatch } from "../store/store";
 import { useNavigate } from "react-router-dom";
 
@@ -18,7 +18,7 @@ export default function SelectionCard({
 }) {
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
-  const { currentFile, savedFiles } = useSelector((state: any) => state.files);
+  const { currentNode, nodes } = useSelector((state: any) => state.graph);
   const [showModal, setShowModal] = useState(false);
   const [selectedNode, setSelectedNode] = useState(null);
   const selectRef = useRef() as any;
@@ -29,14 +29,14 @@ export default function SelectionCard({
       codeMirrorInstance.replaceSelection(linkedNode);
     }
     dispatch(
-      saveFile({
-        fileName: selection,
-        content: `[${currentFile}](<node:${currentFile}>)`,
+      saveNode({
+        nodeName: selection,
+        content: `[${currentNode}](<node:${currentNode}>)`,
       }),
     ).then(() => {
       dispatch(
-        saveFile({
-          fileName: currentFile,
+        saveNode({
+          nodeName: currentNode,
           content: codeMirrorInstance.getValue(),
         }),
       ).then(() => {
@@ -86,7 +86,10 @@ export default function SelectionCard({
     handleCloseModal();
   };
 
-  const options = savedFiles.map((file) => ({ label: file, value: file }));
+  const options = nodes.map((node) => ({
+    label: node.label,
+    value: node.label,
+  }));
 
   if (!selection) return null;
 
@@ -103,21 +106,21 @@ export default function SelectionCard({
       </Card.Header>
       <Card.Body className="SelectionCard-body">
         <OverlayTrigger placement="bottom" overlay={tooltip("New file")}>
-          <Button
-            variant="warning"
-            onClick={() => handleNew()}
-            className="button-left"
-          >
+          <Button onClick={() => handleNew()} className="button-left new">
             <FaPlus />
           </Button>
         </OverlayTrigger>
         <OverlayTrigger placement="bottom" overlay={tooltip("Link node")}>
-          <Button
-            variant="primary"
-            onClick={handleOpenModal}
-            className="button-inbetween"
-          >
+          <Button onClick={handleOpenModal} className="button-inbetween link">
             <FaLink />
+          </Button>
+        </OverlayTrigger>
+        <OverlayTrigger placement="bottom" overlay={tooltip("Ask a question")}>
+          <Button
+            onClick={() => handleTree(selection)}
+            className="button-inbetween ask"
+          >
+            <FaQuestion />
           </Button>
         </OverlayTrigger>
         <OverlayTrigger
@@ -125,9 +128,8 @@ export default function SelectionCard({
           overlay={tooltip("Tree of abstraction")}
         >
           <Button
-            variant="success"
             onClick={() => handleTree(selection)}
-            className="button-right"
+            className="button-right tree"
           >
             <FaTree />
           </Button>

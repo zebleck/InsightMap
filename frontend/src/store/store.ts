@@ -1,10 +1,10 @@
 // store.ts
 import { configureStore } from "@reduxjs/toolkit";
-import fileReducer from "./fileSlice";
+import graphReducer from "./graphSlice";
 
 const store = configureStore({
   reducer: {
-    files: fileReducer,
+    graph: graphReducer,
   },
 });
 

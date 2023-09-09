@@ -35,10 +35,36 @@
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
-.button-left:hover,
-.button-right:hover,
-.button-inbetween:hover {
-  background-color: #f0f0f0;
+.new {
+  background-color: #D4F5E2;
+  color: #0D5E37;
+}
+.new:hover {
+  background-color: #C3E9D0;
+}
+
+.link {
+  background-color: #D1E7FD;
+  color: #0D53A0;
+}
+.link:hover {
+  background-color: #BBD8FA;
+}
+
+.tree {
+  background-color: #EADAD1;
+  color: #6E3B0D;
+}
+.tree:hover {
+  background-color: #E0C9B8;
+}
+
+.ask {
+  background-color: #FEE6D2;
+  color: #D46A0D;
+}
+.ask:hover {
+  background-color: #FDDCB8;
 }
 
 .button-left {

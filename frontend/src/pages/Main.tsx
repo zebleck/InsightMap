@@ -7,14 +7,14 @@ import { FaPlus, FaTrash, FaSave } from "react-icons/fa";
 import "./Main.css";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  fetchFiles,
-  fetchFile,
-  newFile,
-  saveFile,
-  deleteFile,
-  setCurrentFile,
+  fetchGraph,
+  fetchNode,
+  newNode,
+  saveNode,
+  deleteNode,
+  setCurrentNode,
   setMarkdownContent,
-} from "../store/fileSlice";
+} from "../store/graphSlice";
 import { AppDispatch } from "../store/store";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -22,29 +22,29 @@ const server = "http://localhost:5000";
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
-  const { filename } = useParams();
+  const { nodeName } = useParams();
   const dispatch: AppDispatch = useDispatch();
-  const { currentFile, markdownContent, savedFiles } = useSelector(
-    (state: any) => state.files,
+  const { currentNode, markdownContent, nodes } = useSelector(
+    (state: any) => state.graph,
   );
 
   useEffect(() => {
-    dispatch(fetchFiles());
+    dispatch(fetchGraph());
   }, []);
 
   const handleSave = () => {
-    dispatch(saveFile({ fileName: currentFile, content: markdownContent }));
+    dispatch(saveNode({ nodeName: currentNode, content: markdownContent }));
   };
 
   const handleNew = () => {
-    dispatch(newFile(""));
+    dispatch(newNode(""));
     navigate("/");
   };
 
   const handleTree = (selection) => {
     let generatedText = "";
 
-    dispatch(newFile(selection));
+    dispatch(newNode(selection));
 
     axios
       .post(`${server}/generate_tree`, { selection: selection })
@@ -82,16 +82,16 @@ const Main: React.FC = () => {
   const handleDelete = () => {
     const confirmed = window.confirm("Are you sure you want to delete?");
     if (!confirmed) return;
-    dispatch(deleteFile(currentFile));
+    dispatch(deleteNode(currentNode));
   };
 
   useEffect(() => {
-    if (filename) {
-      dispatch(fetchFile(filename));
+    if (nodeName) {
+      dispatch(fetchNode(nodeName));
     } else {
       handleNew();
     }
-  }, [filename]);
+  }, [nodeName]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -120,16 +120,16 @@ const Main: React.FC = () => {
       if (el.tagName === "A") {
         const href = el.getAttribute("href");
         if (href && href.startsWith("node:")) {
-          const filename = decodeURI(href.replace("node:", ""));
-          handleLoad(e, filename);
+          const nodeName = decodeURI(href.replace("node:", ""));
+          handleLoad(e, nodeName);
         }
       }
     });
   }, []);
 
-  const handleLoad = (e, filename) => {
+  const handleLoad = (e, nodeName) => {
     e.preventDefault();
-    navigate(`/${filename}`);
+    navigate(`/${nodeName}`);
   };
 
   return (
@@ -138,29 +138,29 @@ const Main: React.FC = () => {
         <div className="row">
           <div className="col-md-2">
             <h4>Saved Files</h4>
-            {savedFiles.map((filename) => (
-              <ul key={filename}>
+            {nodes.map((node) => (
+              <ul key={node.label}>
                 <li>
-                  <a href="" onClick={(e) => handleLoad(e, filename)}>
-                    {filename}
+                  <a href="" onClick={(e) => handleLoad(e, node.label)}>
+                    {node.label}
                   </a>
                 </li>
               </ul>
             ))}
           </div>
           <div className="col-md-8">
-            <h4>{currentFile}</h4>
+            <h4>{currentNode}</h4>
             <MarkdownEditor handleTree={handleTree} />
           </div>
           <div className="col-md-2">
             <div className="d-flex flex-column">
               <FormGroup className="mb-3">
-                <Form.Label>Filename</Form.Label>
+                <Form.Label>nodeName</Form.Label>
                 <Form.Control
-                  type="filename"
-                  placeholder="Enter filename"
-                  value={currentFile}
-                  onChange={(e) => dispatch(setCurrentFile(e.target.value))}
+                  type="nodeName"
+                  placeholder="Enter nodeName"
+                  value={currentNode}
+                  onChange={(e) => dispatch(setCurrentNode(e.target.value))}
                 />
               </FormGroup>
               <Button variant="warning" onClick={handleNew} className="mb-3">
