@@ -8,6 +8,7 @@ import { Provider } from "react-redux";
 import store from "./store/store";
 import Main from "./pages/Main";
 import { Container, Nav, Navbar } from "react-bootstrap";
+import { FaHome, FaProjectDiagram } from "react-icons/fa";
 
 const App: React.FC = () => {
   return (
@@ -20,10 +21,10 @@ const App: React.FC = () => {
             </Navbar.Brand>
             <Nav className="me-auto">
               <Nav.Link as={Link} to="/">
-                Home
+                <FaHome /> Home
               </Nav.Link>
               <Nav.Link as={Link} to="/graph">
-                Graph
+                <FaProjectDiagram /> Graph
               </Nav.Link>
             </Nav>
           </Container>

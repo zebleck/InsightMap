@@ -55,7 +55,7 @@ const NodeList = ({ handleLoad }) => {
               All Nodes
             </a>
           </h5>
-          <h4>Connected Nodes</h4>
+          <h4>Connected with</h4>
           <ul>
             {filteredConnectedNodes.map((node) => (
               <li key={node}>
