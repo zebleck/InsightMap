@@ -23,7 +23,7 @@ const Graph: React.FC = () => {
       graphData.nodes.map((node) => ({ ...node, shape: "box" })),
     );
     const edges = new DataSet(
-      graphData.edges.map((edge) => ({ ...edge, arrows: "to" })),
+      graphData.edges.map((edge) => ({ ...edge, label: "", arrows: "to" })),
     );
 
     const container = document.getElementById("network");
