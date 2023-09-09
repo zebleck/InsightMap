@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import axios from "axios";
 import MarkdownEditor from "../components/MarkdownEditor";
 import { Button, Form, FormGroup } from "react-bootstrap";
 import { ToastContainer } from "react-toastify";
@@ -13,18 +12,16 @@ import {
   saveNode,
   deleteNode,
   setCurrentNode,
-  setMarkdownContent,
 } from "../store/graphSlice";
 import { AppDispatch } from "../store/store";
 import { useNavigate, useParams } from "react-router-dom";
-
-const server = "http://localhost:5000";
+import NodeList from "../components/NodeList";
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
   const { nodeName } = useParams();
   const dispatch: AppDispatch = useDispatch();
-  const { currentNode, markdownContent, nodes } = useSelector(
+  const { currentNode, markdownContent } = useSelector(
     (state: any) => state.graph,
   );
 
@@ -34,6 +31,7 @@ const Main: React.FC = () => {
 
   const handleSave = () => {
     dispatch(saveNode({ nodeName: currentNode, content: markdownContent }));
+    navigate(`/${currentNode}`);
   };
 
   const handleNew = () => {
@@ -41,48 +39,11 @@ const Main: React.FC = () => {
     navigate("/");
   };
 
-  const handleTree = (selection) => {
-    let generatedText = "";
-
-    dispatch(newNode(selection));
-
-    axios
-      .post(`${server}/generate_tree`, { selection: selection })
-      .then((response) => {
-        // Initialize the EventSource with the correct URL for SSE (Server-Sent Events)
-        const eventSource = new EventSource(
-          `${server}/request_sse?session_id=${response.data.session_id}`,
-        );
-
-        console.log("EventSource", eventSource);
-
-        eventSource.onmessage = function (event) {
-          if (event.data === "__complete__") {
-            // Handle your completion logic here.
-            eventSource.close();
-            dispatch(setMarkdownContent(generatedText));
-            return;
-          }
-
-          generatedText += event.data.replace(/<br>/g, "\n");
-          console.log("EventSource message", event.data);
-          dispatch(setMarkdownContent(generatedText));
-        };
-
-        eventSource.onerror = function (error) {
-          console.error("EventSource failed:", error);
-          eventSource.close();
-        };
-      })
-      .catch((error) => {
-        console.error("Error initializing tree generation:", error);
-      });
-  };
-
   const handleDelete = () => {
     const confirmed = window.confirm("Are you sure you want to delete?");
     if (!confirmed) return;
     dispatch(deleteNode(currentNode));
+    navigate("/");
   };
 
   useEffect(() => {
@@ -137,20 +98,11 @@ const Main: React.FC = () => {
       <div className="container mt-5">
         <div className="row">
           <div className="col-md-2">
-            <h4>Saved Files</h4>
-            {nodes.map((node) => (
-              <ul key={node.label}>
-                <li>
-                  <a href="" onClick={(e) => handleLoad(e, node.label)}>
-                    {node.label}
-                  </a>
-                </li>
-              </ul>
-            ))}
+            <NodeList handleLoad={handleLoad} />
           </div>
           <div className="col-md-8">
             <h4>{currentNode}</h4>
-            <MarkdownEditor handleTree={handleTree} />
+            <MarkdownEditor />
           </div>
           <div className="col-md-2">
             <div className="d-flex flex-column">

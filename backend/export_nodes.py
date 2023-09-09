@@ -7,7 +7,7 @@ driver = GraphDatabase.driver(uri, auth=("neo4j", "password"))
 
 def export_nodes(tx):
     # Fetch all File nodes
-    result = tx.run("MATCH (n:File) RETURN n.name AS name, n.content AS content")
+    result = tx.run("MATCH (n:KnowledgeNode) RETURN n.name AS name, n.content AS content")
     
     # Create directory if it doesn't exist
     if not os.path.exists('exported_files'):

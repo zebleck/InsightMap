@@ -1,0 +1,27 @@
+.node-list {
+	padding: 10px;
+}
+  
+.node-list h4,
+.node-list h5 {
+	margin-bottom: 15px;
+}
+  
+.node-list ul {
+	list-style: none;
+	padding-left: 0;
+} 
+  
+.node-list ul li {
+	padding: 5px 0;
+}
+  
+.node-list a {
+	text-decoration: none;
+	color: #007bff;
+}
+  
+.node-list a:hover {
+	text-decoration: underline;
+}
+  

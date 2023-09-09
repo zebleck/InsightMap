@@ -14,7 +14,6 @@ const Graph: React.FC = () => {
     // Fetch graph data from your Flask API
     axios.get("http://localhost:5000/graph").then((response) => {
       setGraphData(response.data);
-      console.log(response.data);
     });
   }, []);
 

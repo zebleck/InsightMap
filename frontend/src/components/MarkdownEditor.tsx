@@ -8,11 +8,7 @@ import { setMarkdownContent } from "../store/graphSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store/store";
 
-type MarkdownEditorProps = {
-  handleTree: (nodeName?: string) => void;
-};
-
-const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ handleTree }) => {
+const MarkdownEditor = () => {
   const dispatch: AppDispatch = useDispatch();
   const simpleMDERef = useRef<any>(null);
   const [selection, setSelection] = useState<string | null>(null);
@@ -84,7 +80,6 @@ const MarkdownEditor: React.FC<MarkdownEditorProps> = ({ handleTree }) => {
       <SelectionCard
         selection={selection}
         position={position}
-        handleTree={handleTree}
         codeMirrorInstance={codemirrorInstance}
       />
     </>

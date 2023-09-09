@@ -27,13 +27,18 @@ InSightMap is a knowledge management platform that seamlessly integrates a vast 
    cd backend
    echo "OPENAI_KEY=your_openai_api_key" > .env
    ```
-3. In the root folder, build and start the docker container
+3. Navigate to the frontend folder and install packages
+   ```bash
+   cd ../frontend
+   npm install
+   ```
+4. In the root folder, build and start the docker container
    ```bash
    cd ..
    docker-compose build
    docker-compose up
    ```
-4. The frontend should be accessible at port 3000.
+5. The frontend should be accessible at port 3000.
 
 ## Contributing
 

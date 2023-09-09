@@ -19,6 +19,12 @@ try:
 except:
   logging.warning("Unable to set OpenAI API Key and Organization")
 
+'''
+-----------------------
+Knowledge Graph endpoints
+-----------------------
+'''
+
 @app.route('/graph/saveNode/<nodename>', methods=['POST'])
 def save_node(nodename):
   content = request.json.get("content")
@@ -105,6 +111,17 @@ def read_node(nodename):
       return jsonify(success=True, content=content)
     else:
       return jsonify(success=False), 404
+    
+'''
+-----------------------
+Generative AI endpoints
+-----------------------
+'''
+
+session_store = {}
+
+def generate_unique_session_id():
+    return str(uuid.uuid4())
   
 def generate_tree_func(selection):
   prompt = f"Perform a multi-dimensional analysis of {selection} by constructing a Tree of Abstraction. Start from the immediate, tangible actions and delve into deeper layers of complexity, adapting your approach as needed to capture the unique aspects of this activity. Your analysis may include, but is not limited to, the biological, psychological, social, technological, economic, and philosophical dimensions. Provide a comprehensive and insightful exploration, and identify intersections between different layers of abstraction where relevant. Return in markdown."
@@ -118,7 +135,7 @@ def generate_tree_func(selection):
       ],
       stream=True,
     )
-    logging.info("Debug: ChatCompletion created") 
+    
     for chunk in response:
       try:
         text_chunk = chunk['choices'][0]['delta']['content']
@@ -136,31 +153,64 @@ def generate_tree_func(selection):
 
   return generate
 
-session_store = {}
+def generate_answer_func(topic, question):
+  prompt = f"Answer the following task on the topic of {topic}: {question}. Return in markdown"
+  
+  def generate():
+    response = openai.ChatCompletion.create(
+      model='gpt-4',
+      messages=[
+          {'role': 'user',
+           'content': prompt}
+      ],
+      stream=True,
+    )
+    
+    for chunk in response:
+      try:
+        text_chunk = chunk['choices'][0]['delta'].get('content', '')
+        finish_reason = chunk['choices'][0]['finish_reason']
+        
+        if finish_reason == 'stop':
+          yield "data: __complete__\n\n"
+        
+        text_chunk = text_chunk.replace('\n', '<br>')
+        yield f"data: {text_chunk}\n\n"
 
-def generate_unique_session_id():
-    return str(uuid.uuid4())
+      except KeyError:
+        logging.info(f"Debug: Skipping incomplete chunk {chunk}")  # Debug line
+        continue
+
+  return generate
 
 @app.route('/generate_tree', methods=['POST'])
 def generate_tree_endpoint():
-    selection = request.json.get("selection")
-    session_id = generate_unique_session_id()  # Assume you have this function defined
-    session_store[session_id] = generate_tree_func(selection)
-    return jsonify({"session_id": session_id, "selection": selection})
+  selection = request.json.get("selection")
+  session_id = generate_unique_session_id()  # Assume you have this function defined
+  session_store[session_id] = generate_tree_func(selection)
+  return jsonify({"session_id": session_id, "selection": selection})
+
+@app.route('/generate_answer', methods=['POST'])
+def answer_endpoint():
+  topic = request.json.get("topic")
+  question = request.json.get("question")
+  session_id = generate_unique_session_id()
+  session_store[session_id] = generate_answer_func(topic, question)
+  return jsonify({"session_id": session_id, "topic": topic, "question": question})
 
 @app.route('/request_sse')
 def request_sse():
-    headers = {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive'
-    }
-    session_id = request.args.get("session_id")
-    generator_function = session_store.get(session_id)
-    if generator_function:
-        return Response(generator_function(), headers=headers)
-    else:
-        return "Session not found", 404
+  headers = {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  }
+  session_id = request.args.get("session_id")
+  generator_function = session_store.get(session_id)
+  if generator_function:
+    return Response(generator_function(), headers=headers)
+  else:
+    return "Session not found", 404
 
 
 if __name__ == '__main__':
