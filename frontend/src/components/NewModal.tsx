@@ -1,12 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Button, Modal, Form } from 'react-bootstrap';
+import React, { useEffect, useRef, useState } from "react";
+import { Button, Modal, Form } from "react-bootstrap";
 
 const NewModal = ({ show, handleClose, handleSubmit, selection }) => {
-  const [nodeName, setNodeName] = useState(selection);
+  const [nodeName, setNodeName] = useState("");
   const inputRef = useRef(null);
 
-	useEffect(() => {
+  useEffect(() => {
     if (show && inputRef.current) {
+      setNodeName(selection);
       inputRef.current.focus();
     }
   }, [show]);
@@ -24,7 +25,7 @@ const NewModal = ({ show, handleClose, handleSubmit, selection }) => {
   const handleFormSubmit = (e) => {
     e.preventDefault();
     handleSubmit(nodeName);
-    setNodeName('');
+    setNodeName("");
     handleClose();
   };
 
@@ -43,6 +44,7 @@ const NewModal = ({ show, handleClose, handleSubmit, selection }) => {
               value={nodeName}
               onChange={handleInputChange}
               ref={inputRef}
+              onKeyDown={handleKeyDown}
             />
           </Form.Group>
         </Modal.Body>

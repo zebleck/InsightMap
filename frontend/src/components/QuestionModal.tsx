@@ -1,14 +1,22 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
 
-const QuestionModal = ({ show, handleClose, handleSubmit, topic }) => {
+const QuestionModal = ({ show, handleClose, handleSubmit, context }) => {
   const [question, setQuestion] = useState("");
   const inputRef = useRef(null);
+  const [newNodeName, setNewNodeName] = useState("");
   const [createNew, setCreateNew] = useState(false);
+  const [createLink, setCreateLink] = useState(false);
 
   useEffect(() => {
     if (show && inputRef.current) {
-      inputRef.current.focus();
+      setQuestion(`"${context}"\n\n`);
+      const textarea = inputRef.current;
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = textarea.value.length;
+      setTimeout(() => {
+        textarea.scrollTop = textarea.scrollHeight;
+      }, 0);
     }
   }, [show]);
 
@@ -22,9 +30,13 @@ const QuestionModal = ({ show, handleClose, handleSubmit, topic }) => {
     setQuestion(e.target.value);
   };
 
+  const handleNewNodeNameChange = (e) => {
+    setNewNodeName(e.target.value);
+  };
+
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    handleSubmit(question, createNew);
+    handleSubmit(question, createNew ? newNodeName : null, createLink);
     setQuestion("");
     handleClose();
   };
@@ -33,15 +45,14 @@ const QuestionModal = ({ show, handleClose, handleSubmit, topic }) => {
     <Modal show={show} onHide={handleClose}>
       <form onSubmit={handleFormSubmit}>
         <Modal.Header closeButton>
-          <Modal.Title>
-            Ask a question about <strong>{topic}</strong>
-          </Modal.Title>
+          <Modal.Title>Ask a question</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form.Group className="mb-3" controlId="answerTextArea">
+            <Form.Label>Question</Form.Label>
             <Form.Control
               as="textarea"
-              rows={3}
+              rows={8}
               value={question}
               onChange={handleInputChange}
               ref={inputRef}
@@ -54,6 +65,26 @@ const QuestionModal = ({ show, handleClose, handleSubmit, topic }) => {
             checked={createNew}
             onChange={(e) => setCreateNew(e.target.checked)}
           />
+          {createNew && (
+            <>
+              <Form.Group className="mt-3 mb-3" controlId="newNodeName">
+                <Form.Label>New Node Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter new node name"
+                  value={newNodeName}
+                  onChange={handleNewNodeNameChange}
+                  required
+                />
+              </Form.Group>
+              <Form.Check
+                type="checkbox"
+                label="Link to selected node"
+                checked={createLink}
+                onChange={(e) => setCreateLink(e.target.checked)}
+              />
+            </>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>

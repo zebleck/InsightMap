@@ -153,8 +153,8 @@ def generate_tree_func(selection):
 
   return generate
 
-def generate_answer_func(topic, question):
-  prompt = f"Answer the following task on the topic of {topic}: {question}. Return in markdown"
+def generate_answer_func(question):
+  prompt = f"Answer the following question: {question}. Return in markdown"
   
   def generate():
     response = openai.ChatCompletion.create(
@@ -192,11 +192,10 @@ def generate_tree_endpoint():
 
 @app.route('/generate_answer', methods=['POST'])
 def answer_endpoint():
-  topic = request.json.get("topic")
   question = request.json.get("question")
   session_id = generate_unique_session_id()
-  session_store[session_id] = generate_answer_func(topic, question)
-  return jsonify({"session_id": session_id, "topic": topic, "question": question})
+  session_store[session_id] = generate_answer_func(question)
+  return jsonify({"session_id": session_id, "question": question})
 
 @app.route('/request_sse')
 def request_sse():

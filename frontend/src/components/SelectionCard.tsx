@@ -23,18 +23,19 @@ export default function SelectionCard({
   const navigate = useNavigate();
   const dispatch: AppDispatch = useDispatch();
   const { currentNode, nodes } = useSelector((state: any) => state.graph);
-  const nodeExists = nodes.some((node) => node.label === selection);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [showNewModal, setShowNewModal] = useState(false);
 
-  const handleNew = async (newNodeName = null) => {
+  const handleNew = async (newNodeName = null, createLink = true) => {
     const nodeName = newNodeName || selection;
-    handleLink(nodeName);
+    const nodeExists = nodes.some((node) => node.label === nodeName);
+
+    if (createLink) handleLink(nodeName);
     if (!nodeExists) {
       await dispatch(
         saveNode({
-          nodeName: nodeName,
+          nodeName,
           content: `[${currentNode}](<node:${currentNode}>)`,
         }),
       );
@@ -114,7 +115,7 @@ export default function SelectionCard({
         if (createNew) {
           dispatch(
             saveNode({
-              nodeName: selection,
+              nodeName: createNew,
               content: codeMirrorInstance.getValue(),
             }),
           );
@@ -156,11 +157,15 @@ export default function SelectionCard({
     };
   };
 
-  const handleQuestion = async (question, createNew = false) => {
+  const handleQuestion = async (
+    question,
+    newNodeName = null,
+    createLink = false,
+  ) => {
     let fromCursor;
 
-    if (createNew) {
-      await handleNew();
+    if (newNodeName) {
+      await handleNew(newNodeName, createLink);
 
       // Move cursor to the end of the new file
       const line = codeMirrorInstance.lineCount() - 1;
@@ -172,14 +177,13 @@ export default function SelectionCard({
     }
     axios
       .post(`${server}/generate_answer`, {
-        topic: selection,
         question: question,
       })
       .then((response) => {
         const eventSource = new EventSource(
           `${server}/request_sse?session_id=${response.data.session_id}`,
         );
-        handleEventSource(eventSource, createNew, fromCursor);
+        handleEventSource(eventSource, newNodeName, fromCursor);
       });
   };
 
@@ -389,7 +393,7 @@ export default function SelectionCard({
         show={showQuestionModal}
         handleClose={handleCloseQuestionModal}
         handleSubmit={handleQuestion}
-        topic={selection}
+        context={selection}
       />
       <NewModal
         show={showNewModal}

@@ -18,8 +18,6 @@ const NodeList = ({ handleLoad }) => {
     setSearchTerm(event.target.value);
   };
 
-  console.log(nodes);
-
   const filteredConnectedNodes = connectedNodes
     .filter((node) => node.toLowerCase().includes(searchTerm.toLowerCase()))
     ?.sort((a, b) => a.localeCompare(b));
