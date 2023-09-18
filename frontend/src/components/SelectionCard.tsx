@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import LinkingModal from "./LinkingModal";
 import QuestionModal from "./QuestionModal";
+import NewModal from "./NewModal";
 
 const tooltip = (text) => <Tooltip id="tooltip">{text}</Tooltip>;
 
@@ -25,13 +26,15 @@ export default function SelectionCard({
   const nodeExists = nodes.some((node) => node.label === selection);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
+  const [showNewModal, setShowNewModal] = useState(false);
 
-  const handleNew = async () => {
-    handleLink(selection);
+  const handleNew = async (newNodeName = null) => {
+    const nodeName = newNodeName || selection;
+    handleLink(nodeName);
     if (!nodeExists) {
       await dispatch(
         saveNode({
-          nodeName: selection,
+          nodeName: nodeName,
           content: `[${currentNode}](<node:${currentNode}>)`,
         }),
       );
@@ -51,9 +54,9 @@ export default function SelectionCard({
       );
     }
 
-    await dispatch(fetchNode(selection));
+    await dispatch(fetchNode(nodeName));
 
-    navigate(`/${selection}`);
+    navigate(`/${nodeName}`);
   };
 
   const handleTree = async (selection) => {
@@ -287,6 +290,12 @@ export default function SelectionCard({
   const handleCloseQuestionModal = () => {
     setShowQuestionModal(false);
   };
+  const handleOpenNewModal = () => {
+    setShowNewModal(true);
+  };
+  const handleCloseNewModal = () => {
+    setShowNewModal(false);
+  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -328,7 +337,7 @@ export default function SelectionCard({
       </Card.Header>
       <Card.Body className="SelectionCard-body">
         <OverlayTrigger placement="bottom" overlay={tooltip("New node")}>
-          <Button onClick={() => handleNew()} className="button-left new">
+          <Button onClick={handleOpenNewModal} className="button-left new">
             <FaPlus />
           </Button>
         </OverlayTrigger>
@@ -381,6 +390,12 @@ export default function SelectionCard({
         handleClose={handleCloseQuestionModal}
         handleSubmit={handleQuestion}
         topic={selection}
+      />
+      <NewModal
+        show={showNewModal}
+        handleClose={handleCloseNewModal}
+        handleSubmit={handleNew}
+        selection={selection}
       />
     </Card>
   );
