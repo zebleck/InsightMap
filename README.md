@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/zebleck/InSightMap/assets/10833180/7b14b22f-5c31-4373-84c5-741e3aa76fa6" height="400px" />
+  <img src="https://github.com/zebleck/InSightMap/assets/10833180/5943f178-d55d-40a7-ab52-1aa11f936b8a" height="400px" />
   
   
   <h3 align="center">🧠 InSightMap</h3>
