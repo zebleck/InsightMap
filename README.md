@@ -1,4 +1,12 @@
-# 🧠 InSightMap
+<p align="center">
+  <img src="https://github.com/zebleck/InSightMap/assets/10833180/7b14b22f-5c31-4373-84c5-741e3aa76fa6" height="400px" />
+  
+  
+  <h3 align="center">🧠 InSightMap</h3>
+  <p align="center">A Next-generation Knowledge Management Website</p>
+</p>
+
+## Description
 
 InSightMap is a knowledge management platform that seamlessly integrates a vast array of information into an easily navigable graph-like structure. Built with a focus on usability, InSightMap lets you capture, link, and traverse complex ideas and topics, enabling you to see the bigger picture. Equipped with dynamic navigation and a rich Markdown editor, the platform provides an interactive and user-friendly experience.
 
