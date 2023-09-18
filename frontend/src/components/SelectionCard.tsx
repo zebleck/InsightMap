@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Button, Card, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { FaLink, FaPlus, FaQuestion, FaTimes, FaTree } from "react-icons/fa";
+import { FaLink, FaPlus, FaQuestion, FaTimes } from "react-icons/fa";
 import "./SelectionCard.css";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchNode, saveNode, setMarkdownContent } from "../store/graphSlice";
+import { fetchNode, saveNode } from "../store/graphSlice";
 import { AppDispatch } from "../store/store";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -60,7 +60,7 @@ export default function SelectionCard({
     navigate(`/${nodeName}`);
   };
 
-  const handleTree = async (selection) => {
+  /*const handleTree = async (selection) => {
     let generatedText = "";
 
     await handleNew();
@@ -103,7 +103,7 @@ export default function SelectionCard({
       .catch((error) => {
         console.error("Error initializing tree generation:", error);
       });
-  };
+  };*/
 
   const handleEventSource = (eventSource, createNew, fromCursor) => {
     let lastCursor = fromCursor;
@@ -367,12 +367,12 @@ export default function SelectionCard({
         <OverlayTrigger placement="bottom" overlay={tooltip("Ask a question")}>
           <Button
             onClick={handleOpenQuestionModal}
-            className="button-inbetween ask"
+            className="button-right ask"
           >
             <FaQuestion />
           </Button>
         </OverlayTrigger>
-        <OverlayTrigger
+        {/*<OverlayTrigger
           placement="bottom"
           overlay={tooltip("Tree of abstraction")}
         >
@@ -382,7 +382,7 @@ export default function SelectionCard({
           >
             <FaTree />
           </Button>
-        </OverlayTrigger>
+        </OverlayTrigger>*/}
       </Card.Body>
       <LinkingModal
         show={showLinkModal}

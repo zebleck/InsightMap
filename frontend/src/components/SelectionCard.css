@@ -11,7 +11,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
+justify-content: center;
   padding: 0.5rem;
   background-color: #f0f0f0;
   border-bottom: 1px solid #e0e0e0;
@@ -51,20 +51,12 @@
   background-color: #BBD8FA;
 }
 
-.tree {
-  background-color: #D4F5E2;
-  color: #0D5E37;
-}
-.tree:hover {
-  background-color: #C3E9D0;
-}
-
 .ask {
-  background-color: #FAD7A0;
-  color: #AF601A;
+  background-color: #A9DFBF;
+  color: #196F3D;
 }
 .ask:hover {
-  background-color: #F5CBA7;
+  background-color: #82E0AA;
 }
 
 .remove {
@@ -74,6 +66,14 @@
 .remove:hover {
   background-color: #F5B7B1;
 }
+
+/*.tree {
+  background-color: #D4F5E2;
+  color: #0D5E37;
+}
+.tree:hover {
+  background-color: #C3E9D0;
+}*/
 
 
 .button-left {
