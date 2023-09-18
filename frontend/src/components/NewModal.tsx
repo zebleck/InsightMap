@@ -1,8 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, Modal, Form } from 'react-bootstrap';
 
 const NewModal = ({ show, handleClose, handleSubmit, selection }) => {
   const [nodeName, setNodeName] = useState(selection);
+  const inputRef = useRef(null);
+
+	useEffect(() => {
+    if (show && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [show]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      handleFormSubmit(e);
+    }
+  };
 
   const handleInputChange = (e) => {
     setNodeName(e.target.value);
@@ -29,6 +42,7 @@ const NewModal = ({ show, handleClose, handleSubmit, selection }) => {
               placeholder="Enter node name"
               value={nodeName}
               onChange={handleInputChange}
+              ref={inputRef}
             />
           </Form.Group>
         </Modal.Body>
