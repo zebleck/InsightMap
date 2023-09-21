@@ -67,6 +67,15 @@ justify-content: center;
   background-color: #F5B7B1;
 }
 
+.color {
+  background-color: #FDEBD0;
+  color: #B7950B;
+}
+
+.color:hover {
+  background-color: #F9E79F;
+}
+
 /*.tree {
   background-color: #D4F5E2;
   color: #0D5E37;

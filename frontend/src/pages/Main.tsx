@@ -76,16 +76,31 @@ const Main: React.FC = () => {
   }, [handleSave]);
 
   useEffect(() => {
-    document.addEventListener("click", (e) => {
+    const handleClick = (e) => {
       const el = e.target as any;
       if (el.tagName === "A") {
         const href = el.getAttribute("href");
         if (href && href.startsWith("node:")) {
           const nodeName = decodeURI(href.replace("node:", ""));
-          handleLoad(e, nodeName);
+
+          if (e.ctrlKey || e.shiftKey || e.button === 1) {
+            e.preventDefault();
+            window.open(`/${nodeName}`, "_blank");
+          } else {
+            e.preventDefault();
+            handleLoad(e, nodeName);
+          }
         }
       }
-    });
+    };
+
+    document.addEventListener("click", handleClick);
+    document.addEventListener("auxclick", handleClick);
+
+    return () => {
+      document.removeEventListener("click", handleClick);
+      document.removeEventListener("auxclick", handleClick);
+    };
   }, []);
 
   const handleLoad = (e, nodeName) => {

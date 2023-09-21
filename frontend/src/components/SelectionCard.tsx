@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Card, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { FaLink, FaPlus, FaQuestion, FaTimes } from "react-icons/fa";
+import { FaLink, FaPalette, FaPlus, FaQuestion, FaTimes } from "react-icons/fa";
 import "./SelectionCard.css";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchNode, saveNode } from "../store/graphSlice";
@@ -10,6 +10,7 @@ import axios from "axios";
 import LinkingModal from "./LinkingModal";
 import QuestionModal from "./QuestionModal";
 import NewModal from "./NewModal";
+import ColorPicker from "./ColorPicker";
 
 const tooltip = (text) => <Tooltip id="tooltip">{text}</Tooltip>;
 
@@ -26,6 +27,7 @@ export default function SelectionCard({
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [showNewModal, setShowNewModal] = useState(false);
+  const [showColorPicker, setShowColorPicker] = useState(false);
 
   const handleNew = async (newNodeName = null, createLink = true) => {
     const nodeName = newNodeName || selection;
@@ -39,71 +41,19 @@ export default function SelectionCard({
           content: `[${currentNode}](<node:${currentNode}>)`,
         }),
       );
-
-      await dispatch(
-        saveNode({
-          nodeName: currentNode,
-          content: codeMirrorInstance.getValue(),
-        }),
-      );
-    } else {
-      await dispatch(
-        saveNode({
-          nodeName: currentNode,
-          content: codeMirrorInstance.getValue(),
-        }),
-      );
     }
+
+    await dispatch(
+      saveNode({
+        nodeName: currentNode,
+        content: codeMirrorInstance.getValue(),
+      }),
+    );
 
     await dispatch(fetchNode(nodeName));
 
     navigate(`/${nodeName}`);
   };
-
-  /*const handleTree = async (selection) => {
-    let generatedText = "";
-
-    await handleNew();
-
-    const previousContent = codeMirrorInstance.getValue();
-
-    axios
-      .post(`${server}/generate_tree`, { selection: selection })
-      .then((response) => {
-        // Initialize the EventSource with the correct URL for SSE (Server-Sent Events)
-        const eventSource = new EventSource(
-          `${server}/request_sse?session_id=${response.data.session_id}`,
-        );
-
-        console.log("EventSource", eventSource);
-
-        eventSource.onmessage = function (event) {
-          if (event.data === "__complete__") {
-            eventSource.close();
-            dispatch(
-              saveNode({
-                nodeName: selection,
-                content: codeMirrorInstance.getValue(),
-              }),
-            );
-            return;
-          }
-
-          generatedText += event.data.replace(/<br>/g, "\n");
-          console.log("EventSource message", event.data);
-          const totalText = `${previousContent}\n\n${generatedText}`;
-          dispatch(setMarkdownContent(totalText));
-        };
-
-        eventSource.onerror = function (error) {
-          console.error("EventSource failed:", error);
-          eventSource.close();
-        };
-      })
-      .catch((error) => {
-        console.error("Error initializing tree generation:", error);
-      });
-  };*/
 
   const handleEventSource = (eventSource, createNew, fromCursor) => {
     let lastCursor = fromCursor;
@@ -326,6 +276,12 @@ export default function SelectionCard({
     };
   }, [handleOpenLinkModal]);
 
+  const handleColorChange = (color) => {
+    const wrappedSelection = `<color:${color}>${selection}</color>`;
+    codeMirrorInstance.replaceSelection(wrappedSelection);
+    setShowColorPicker(false);
+  };
+
   if (!selection) return null;
 
   return (
@@ -334,6 +290,7 @@ export default function SelectionCard({
       style={{
         left: `${position ? position.left : 0}px`,
         top: `${position ? position.top : 0}px`,
+        overflow: "visible",
       }}
     >
       <Card.Header className="SelectionCard-header">
@@ -367,22 +324,22 @@ export default function SelectionCard({
         <OverlayTrigger placement="bottom" overlay={tooltip("Ask a question")}>
           <Button
             onClick={handleOpenQuestionModal}
-            className="button-right ask"
+            className="button-inbetween ask"
           >
             <FaQuestion />
           </Button>
         </OverlayTrigger>
-        {/*<OverlayTrigger
-          placement="bottom"
-          overlay={tooltip("Tree of abstraction")}
+        <div
+          onMouseEnter={() => setShowColorPicker(true)}
+          onMouseLeave={() => setShowColorPicker(false)}
         >
-          <Button
-            onClick={() => handleTree(selection)}
-            className="button-right tree"
-          >
-            <FaTree />
-          </Button>
-        </OverlayTrigger>*/}
+          <OverlayTrigger placement="top" overlay={tooltip("Color!")}>
+            <Button className="button-right color">
+              <FaPalette />
+            </Button>
+          </OverlayTrigger>
+          {showColorPicker && <ColorPicker colorSelected={handleColorChange} />}
+        </div>
       </Card.Body>
       <LinkingModal
         show={showLinkModal}
