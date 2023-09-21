@@ -1,9 +1,6 @@
 import React, { useEffect } from "react";
 import MarkdownEditor from "../components/MarkdownEditor";
-import { Button, Form, FormGroup } from "react-bootstrap";
 import { ToastContainer } from "react-toastify";
-import { FaPlus, FaTrash, FaSave } from "react-icons/fa";
-import "./Main.css";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchGraph,
@@ -11,11 +8,12 @@ import {
   newNode,
   saveNode,
   deleteNode,
-  setCurrentNode,
 } from "../store/graphSlice";
 import { AppDispatch } from "../store/store";
 import { useNavigate, useParams } from "react-router-dom";
 import NodeList from "../components/NodeList";
+import RightSideButtons from "../components/RightSideButtons";
+import "./Main.css";
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
@@ -121,26 +119,11 @@ const Main: React.FC = () => {
             <MarkdownEditor />
           </div>
           <div className="col-md-2">
-            <div className="d-flex flex-column">
-              <FormGroup className="mb-3">
-                <Form.Label>nodeName</Form.Label>
-                <Form.Control
-                  type="nodeName"
-                  placeholder="Enter nodeName"
-                  value={currentNode}
-                  onChange={(e) => dispatch(setCurrentNode(e.target.value))}
-                />
-              </FormGroup>
-              <Button variant="warning" onClick={handleNew} className="mb-3">
-                <FaPlus />
-              </Button>
-              <Button variant="danger" onClick={handleDelete} className="mb-3">
-                <FaTrash />
-              </Button>
-              <Button variant="primary" onClick={handleSave} className="mb-3">
-                <FaSave />
-              </Button>
-            </div>
+            <RightSideButtons
+              handleNew={handleNew}
+              handleSave={handleSave}
+              handleDelete={handleDelete}
+            />
           </div>
         </div>
       </div>

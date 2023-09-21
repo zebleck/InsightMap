@@ -1,10 +1,12 @@
 // store.ts
 import { configureStore } from "@reduxjs/toolkit";
 import graphReducer from "./graphSlice";
+import streamReducer from "./streamSlice";
 
 const store = configureStore({
   reducer: {
     graph: graphReducer,
+    stream: streamReducer,
   },
 });
 

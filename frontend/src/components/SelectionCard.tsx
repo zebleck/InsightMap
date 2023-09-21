@@ -6,15 +6,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchNode, saveNode } from "../store/graphSlice";
 import { AppDispatch } from "../store/store";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import LinkingModal from "./LinkingModal";
 import QuestionModal from "./QuestionModal";
 import NewModal from "./NewModal";
 import ColorPicker from "./ColorPicker";
+import { initiateAnswerStream } from "../store/streamSlice";
 
 const tooltip = (text) => <Tooltip id="tooltip">{text}</Tooltip>;
-
-const server = "http://localhost:5000";
 
 export default function SelectionCard({
   selection,
@@ -55,17 +53,25 @@ export default function SelectionCard({
     navigate(`/${nodeName}`);
   };
 
-  const handleEventSource = (eventSource, createNew, fromCursor) => {
-    let lastCursor = fromCursor;
+  const handleQuestion = async (
+    question,
+    newNodeName = null,
+    createLink = false,
+  ) => {
+    let fromCursor;
+    let lastCursor;
     let isFirstChunk = true;
 
-    eventSource.onmessage = function (event) {
+    const onError = (error) => {
+      console.error("EventSource failed:", error);
+    };
+
+    const onMessage = (event) => {
       if (event.data === "__complete__") {
-        eventSource.close();
-        if (createNew) {
+        if (newNodeName) {
           dispatch(
             saveNode({
-              nodeName: createNew,
+              nodeName: newNodeName,
               content: codeMirrorInstance.getValue(),
             }),
           );
@@ -75,7 +81,7 @@ export default function SelectionCard({
 
       let newChunk = event.data.replace(/<br>/g, "\n");
 
-      if (createNew && isFirstChunk) {
+      if (newNodeName && isFirstChunk) {
         newChunk = `\n\n${newChunk}`;
         isFirstChunk = false; // Reset the flag
       }
@@ -91,7 +97,7 @@ export default function SelectionCard({
       };
 
       // Insert new content without specifying an ending cursor to avoid overwriting
-      if (createNew) {
+      if (newNodeName) {
         codeMirrorInstance.replaceRange(newChunk, lastCursor, toCursor);
       } else {
         codeMirrorInstance.replaceRange(newChunk, lastCursor);
@@ -100,19 +106,6 @@ export default function SelectionCard({
       // Update the last cursor position for the next round
       lastCursor = toCursor;
     };
-
-    eventSource.onerror = function (error) {
-      console.error("EventSource failed:", error);
-      eventSource.close();
-    };
-  };
-
-  const handleQuestion = async (
-    question,
-    newNodeName = null,
-    createLink = false,
-  ) => {
-    let fromCursor;
 
     if (newNodeName) {
       await handleNew(newNodeName, createLink);
@@ -125,16 +118,8 @@ export default function SelectionCard({
     } else {
       fromCursor = codeMirrorInstance.getCursor(false);
     }
-    axios
-      .post(`${server}/generate_answer`, {
-        question: question,
-      })
-      .then((response) => {
-        const eventSource = new EventSource(
-          `${server}/request_sse?session_id=${response.data.session_id}`,
-        );
-        handleEventSource(eventSource, newNodeName, fromCursor);
-      });
+    lastCursor = fromCursor;
+    dispatch(initiateAnswerStream({ question, onMessage, onError }));
   };
 
   const handleLink = (selectedNode, linkAll = false) => {
