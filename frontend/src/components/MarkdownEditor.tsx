@@ -13,6 +13,7 @@ import "./MarkdownEditor.css";
 import { setMarkdownContent } from "../store/graphSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store/store";
+import axios from "axios";
 
 const MarkdownEditor = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -45,6 +46,19 @@ const MarkdownEditor = () => {
           if (highlightLinks) {
             tokens[idx].attrPush(["class", "knowledge-node-link"]);
           } else tokens[idx].attrPush(["class", "knowledge-node-link-hidden"]);
+        }
+      }
+      return self.renderToken(tokens, idx, options);
+    };
+
+    md.renderer.rules.image = (tokens, idx, options, env, self) => {
+      const token = tokens[idx];
+      const srcIndex = token.attrIndex("src");
+      if (srcIndex >= 0) {
+        const srcAttr = token.attrs[srcIndex];
+        if (srcAttr && srcAttr[1].startsWith("img:")) {
+          const filename = srcAttr[1].substring(4); // Remove 'img:' prefix
+          token.attrs[srcIndex][1] = `http://localhost:5000/uploaded_images/${filename}`;
         }
       }
       return self.renderToken(tokens, idx, options);
@@ -181,6 +195,46 @@ const MarkdownEditor = () => {
       },
     };
   }, []);
+
+  useEffect(() => {
+    const handlePaste = async (e) => {
+      if (!codemirrorInstance) return;
+
+      const clipboardData = e.clipboardData;
+      const types = clipboardData.types;
+
+      if (types.indexOf("Files") !== -1) {
+        const file = clipboardData.items[0].getAsFile();
+        const formData = new FormData();
+        formData.append("image", file);
+
+        const response = await axios.post(
+          "http://localhost:5000/uploadImage",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          },
+        );
+
+        if (response.data.success) {
+          const filename = response.data.filename;
+          const imgMarkdown = `![](img:${filename})`;
+
+          // Insert the image Markdown syntax at the current cursor position.
+          const cursorPos = codemirrorInstance.getCursor();
+          codemirrorInstance.replaceRange(imgMarkdown, cursorPos);
+        }
+      }
+    };
+
+    document.addEventListener("paste", handlePaste);
+
+    return () => {
+      document.removeEventListener("paste", handlePaste);
+    };
+  }, [codemirrorInstance]);
 
   return (
     <>

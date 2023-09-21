@@ -7,12 +7,16 @@ from flask_cors import CORS
 import uuid
 import re
 from neo4j import GraphDatabase
+from werkzeug.utils import secure_filename
 uri = "bolt://graphdb:7687"
 driver = GraphDatabase.driver(uri, auth=("neo4j", "password"))
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="uploaded_images", static_url_path='/uploaded_images')
 CORS(app)
+
+if not os.path.exists('uploaded_images'):
+    os.makedirs('uploaded_images')
 
 try:
   openai.api_key = os.environ['OPENAI_KEY']
@@ -112,6 +116,26 @@ def read_node(nodename):
     else:
       return jsonify(success=False), 404
     
+'''
+-----------------------
+Image endpoints
+-----------------------
+'''
+
+@app.route('/uploadImage', methods=['POST'])
+def upload_image():
+    uploaded_file = request.files['image']
+
+    if uploaded_file.filename != '':
+        # Generate a unique filename
+        file_ext = os.path.splitext(uploaded_file.filename)[1]
+        filename = f"{uuid.uuid4().hex}{file_ext}"
+
+        filepath = os.path.join('uploaded_images', secure_filename(filename))
+        uploaded_file.save(filepath)
+
+        return jsonify(success=True, filename=filename)
+
 '''
 -----------------------
 Generative AI endpoints
