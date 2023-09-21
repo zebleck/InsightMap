@@ -3,7 +3,7 @@
   
   
   <h3 align="center">🧠 InSightMap</h3>
-  <p align="center">A Next-generation Knowledge Management Website</p>
+  <p align="center">A Next-generation Knowledge Management Platform</p>
 </p>
 
 ## Description
