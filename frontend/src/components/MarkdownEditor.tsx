@@ -58,7 +58,9 @@ const MarkdownEditor = () => {
         const srcAttr = token.attrs[srcIndex];
         if (srcAttr && srcAttr[1].startsWith("img:")) {
           const filename = srcAttr[1].substring(4); // Remove 'img:' prefix
-          token.attrs[srcIndex][1] = `http://localhost:5000/uploaded_images/${filename}`;
+          token.attrs[
+            srcIndex
+          ][1] = `http://localhost:5000/uploaded_images/${filename}`;
         }
       }
       return self.renderToken(tokens, idx, options);
