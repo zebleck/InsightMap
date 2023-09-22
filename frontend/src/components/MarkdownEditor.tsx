@@ -69,25 +69,28 @@ const MarkdownEditor = () => {
     };
 
     // Add a new inline rule parsing <color:hex>text</color> to colorize text
-    md.inline.ruler.after("text", "color", function (state, silent) {
+    md.inline.ruler.before("emphasis", "color", function (state, silent) {
       const src = state.src.slice(state.pos);
-
+    
       const colorMatch = src.match(/<color:(.+?)>(.*?)<\/color>/);
       if (!colorMatch) return false;
-
+    
       if (!silent) {
         const token = state.push("color_inline", "", 0);
-        token.meta = { color: colorMatch[1], text: colorMatch[2] };
+        // Continue parsing the inner text
+        token.children = md.parseInline(colorMatch[2], {});
+        token.meta = { color: colorMatch[1] };
         state.pos += colorMatch[0].length;
       }
       return true;
     });
-
-    // Render function for new color_inline tokens
+    
     md.renderer.rules.color_inline = function (tokens, idx) {
       const token = tokens[idx];
-      const { color, text } = token.meta;
-      return `<span style="color: ${color}">${text}</span>`;
+      const { color } = token.meta;
+      // Render the inner tokens
+      const innerHtml = md.renderer.render(token.children || [], md.options, {});
+      return `<span style="color: ${color}">${innerHtml}</span>`;
     };
   };
 
