@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import SimpleMDE from "react-simplemde-editor";
 import mk from "markdown-it-katex";
-import emoji from "markdown-it-emoji";
+//import emoji from "markdown-it-emoji";
 import SelectionCard from "./SelectionCard";
 import "./MarkdownEditor.css";
 import { setMarkdownContent } from "../store/graphSlice";
@@ -35,7 +35,7 @@ const MarkdownEditor = ({ md }) => {
   }, []);
 
   md.use(mk);
-  md.use(emoji);
+  //md.use(emoji);
 
   const setMarkdownRenderer = (highlightLinks) => {
     md.renderer.rules.link_open = (tokens, idx, options, env, self) => {

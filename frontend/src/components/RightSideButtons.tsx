@@ -38,6 +38,7 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
     let match;
     let markdownContentWithDataURLs = markdownContent;
 
+    // Replace image links with data URLs
     while ((match = imageRegex.exec(markdownContent)) !== null) {
       const [, imageHash] = match;
       const url = `http://localhost:5000/uploaded_images/${imageHash}`;
@@ -48,8 +49,16 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
       );
     }
 
-    // Now continue with your existing logic
-    const htmlContent = md.render(markdownContentWithDataURLs);
+    // Replace node links back to their original form
+    const nodeRegex = /\[(.*?)\]\(<node:(.*?)>\)/g;
+    const markdownContentWithNodes = markdownContentWithDataURLs.replace(
+      nodeRegex,
+      (match, text) => {
+        return text; // Replace with the text only, removing the node link
+      },
+    );
+
+    const htmlContent = md.render(markdownContentWithNodes);
     const pdfMakeContent = htmlToPdfmake(htmlContent);
     const documentDefinition = {
       content: pdfMakeContent,
