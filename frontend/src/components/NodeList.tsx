@@ -53,7 +53,7 @@ const NodeList = ({ handleLoad }) => {
       {nodeName ? (
         <>
           <h5>
-            <a href="#" onClick={(e) => handleLoad(e, "")}>
+            <a href="/" onClick={(e) => handleLoad(e, "")}>
               All Nodes
             </a>
           </h5>
@@ -61,7 +61,7 @@ const NodeList = ({ handleLoad }) => {
           <ul>
             {filteredConnectedNodes.map((node) => (
               <li key={node}>
-                <a href="#" onClick={(e) => handleLoad(e, node)}>
+                <a href={node} onClick={(e) => handleLoad(e, node)}>
                   {node}
                 </a>
               </li>
@@ -74,7 +74,7 @@ const NodeList = ({ handleLoad }) => {
           <ul>
             {filteredNodes.map((node) => (
               <li key={node.label}>
-                <a href="#" onClick={(e) => handleLoad(e, node.label)}>
+                <a href={node.label} onClick={(e) => handleLoad(e, node.label)}>
                   {node.label}
                 </a>
               </li>

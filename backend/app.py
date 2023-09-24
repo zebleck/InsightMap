@@ -178,7 +178,7 @@ def generate_tree_func(selection):
   return generate
 
 def generate_answer_func(question):
-  prompt = f"Answer the following question: {question}. Return in markdown"
+  prompt = f"Answer the following question: {question}. Return in markdown with latex support ($)."
   
   def generate():
     response = openai.ChatCompletion.create(
