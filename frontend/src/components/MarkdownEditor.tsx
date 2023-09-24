@@ -1,4 +1,3 @@
-import MarkdownIt from "markdown-it";
 import React, {
   useCallback,
   useEffect,
@@ -54,26 +53,28 @@ const MarkdownEditor = ({ md }) => {
       const token = tokens[idx];
       const srcIndex = token.attrIndex("src");
       let width = "auto";
-    
+
       if (srcIndex >= 0) {
         const srcAttr = token.attrs[srcIndex];
-    
+
         // Check for width specification
         const widthMatch = srcAttr[1].match(/width=(\d+)/);
         if (widthMatch) {
           width = widthMatch[1] + "px";
         }
-    
+
         // Update src for specific 'img:' prefix
         if (srcAttr[1].startsWith("img:")) {
           const filename = srcAttr[1].substring(4); // Remove 'img:' prefix
-          token.attrs[srcIndex][1] = `http://localhost:5000/uploaded_images/${filename}`;
+          token.attrs[
+            srcIndex
+          ][1] = `http://localhost:5000/uploaded_images/${filename}`;
         }
-    
+
         // Add width to token attributes
-        token.attrPush(['width', width]);
+        token.attrPush(["width", width]);
       }
-    
+
       return self.renderToken(tokens, idx, options);
     };
 

@@ -23,7 +23,9 @@ const fetchImageAsDataURL = async (url) => {
 
 const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
   const { currentStreams } = useSelector((state: any) => state.stream);
-  const { currentNode, markdownContent } = useSelector((state: any) => state.graph);
+  const { currentNode, markdownContent } = useSelector(
+    (state: any) => state.graph,
+  );
   const dispatch: AppDispatch = useDispatch();
 
   const handleStopStream = (streamId: string) => {
@@ -35,24 +37,24 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
     const imageRegex = /!\[.*\]\(img:(.+?)\)/g;
     let match;
     let markdownContentWithDataURLs = markdownContent;
-  
+
     while ((match = imageRegex.exec(markdownContent)) !== null) {
       const [, imageHash] = match;
       const url = `http://localhost:5000/uploaded_images/${imageHash}`;
       const dataURL = await fetchImageAsDataURL(url);
       markdownContentWithDataURLs = markdownContentWithDataURLs.replace(
         match[0],
-        `![](${dataURL})`
+        `![](${dataURL})`,
       );
     }
-  
+
     // Now continue with your existing logic
     const htmlContent = md.render(markdownContentWithDataURLs);
     const pdfMakeContent = htmlToPdfmake(htmlContent);
     const documentDefinition = {
       content: pdfMakeContent,
     };
-  
+
     pdfMake.createPdf(documentDefinition).download(`${currentNode}.pdf`);
   };
 

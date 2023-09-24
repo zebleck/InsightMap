@@ -119,12 +119,11 @@ const Main: React.FC = () => {
           </div>
           <div className="col-md-8">
             <h4>{currentNode}</h4>
-            <MarkdownEditor
-            md={md} />
+            <MarkdownEditor md={md} />
           </div>
           <div className="col-md-2">
             <RightSideButtons
-            md={md}
+              md={md}
               handleNew={handleNew}
               handleSave={handleSave}
               handleDelete={handleDelete}
