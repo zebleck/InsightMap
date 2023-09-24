@@ -14,6 +14,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import NodeList from "../components/NodeList";
 import RightSideButtons from "../components/RightSideButtons";
 import "./Main.css";
+import MarkdownIt from "markdown-it";
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
@@ -107,6 +108,8 @@ const Main: React.FC = () => {
     dispatch(fetchNode(nodeName));
   };
 
+  const md = new MarkdownIt();
+
   return (
     <>
       <div className="container mt-5">
@@ -116,10 +119,12 @@ const Main: React.FC = () => {
           </div>
           <div className="col-md-8">
             <h4>{currentNode}</h4>
-            <MarkdownEditor />
+            <MarkdownEditor
+            md={md} />
           </div>
           <div className="col-md-2">
             <RightSideButtons
+            md={md}
               handleNew={handleNew}
               handleSave={handleSave}
               handleDelete={handleDelete}
