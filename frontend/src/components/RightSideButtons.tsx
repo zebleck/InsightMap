@@ -21,6 +21,12 @@ const fetchImageAsDataURL = async (url) => {
   });
 };
 
+const fetchNodeContent = async (nodeName) => {
+  const response = await fetch(`http://localhost:5000/graph/${nodeName}`);
+  const data = await response.json();
+  return data.success ? data.content : "";
+};
+
 const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
   const { currentStreams } = useSelector((state: any) => state.stream);
   const { currentNode, markdownContent } = useSelector(
@@ -33,10 +39,27 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
   };
 
   const exportToPdf = async () => {
+    // Find and expand the node links that are also headings
+    const headingNodeRegex = /## \[(.*?)\]\(<node:(.*?)>\)/g;
+    let headingNodeMatch;
+    let expandedMarkdownContent = markdownContent;
+
+    while (
+      (headingNodeMatch = headingNodeRegex.exec(markdownContent)) !== null
+    ) {
+      const [, linkText, nodeName] = headingNodeMatch;
+      const nodeContent = await fetchNodeContent(nodeName);
+      const expandedContent = `## ${linkText}\n\n${nodeContent}`;
+      expandedMarkdownContent = expandedMarkdownContent.replace(
+        headingNodeMatch[0],
+        expandedContent,
+      );
+    }
+
     // Fetch and convert images to data URL
     const imageRegex = /!\[.*\]\(img:(.+?)\)/g;
     let match;
-    let markdownContentWithDataURLs = markdownContent;
+    let markdownContentWithDataURLs = expandedMarkdownContent;
 
     // Replace image links with data URLs
     while ((match = imageRegex.exec(markdownContent)) !== null) {
