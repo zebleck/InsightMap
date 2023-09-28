@@ -16,6 +16,7 @@ InSightMap is a knowledge management platform that seamlessly integrates a vast 
 - 🌐 **Graph-Based Knowledge Management**: Utilizing Neo4j, the backend supports dynamic linking of nodes, representing different pieces of information or ideas.
 - ⭐ **User-Focused Design**: From easy node linking to two-way automatic linking between nodes and dynamic navigation, InSightMap aims for an intuitive and frictionless user experience.
 - 🤖 **Integration of generative AI**: Generate abstract representations of selected text through the use of generative AI
+- 📄 **PDF Export**: Easily convert your Markdown notes, along with embedded images and expanded links, into downloadable PDFs.
 
 ## Tech Stack
 
