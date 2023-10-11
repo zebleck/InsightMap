@@ -48,10 +48,6 @@ const NodeList = ({ handleLoad }) => {
     })
     ?.sort((a, b) => a.label.localeCompare(b.label));
 
-  console.log(connectedNodes);
-
-  console.log(nodes);
-
   if (nodeName && !filteredConnectedNodes.length) {
     return (
       <div className="node-list">
@@ -60,7 +56,6 @@ const NodeList = ({ handleLoad }) => {
             <h5 className="mb-3">Filter by Tags:</h5>
             <div className="mb-3">
               {tags.map((tag: string) => {
-                console.log(selectedTag === tag);
                 return (
                   <Badge
                     className={`badge badge-hover bg-${
@@ -93,7 +88,6 @@ const NodeList = ({ handleLoad }) => {
           <h5 className="mb-3">Filter by Tags:</h5>
           <div className="mb-3">
             {tags.map((tag: string) => {
-              console.log(selectedTag === tag);
               return (
                 <Badge
                   className={`badge badge-hover bg-${

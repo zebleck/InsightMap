@@ -1,75 +1,73 @@
-import React, { useState } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store/store";
 import {
   nodeWithLabelExists,
   removeTagFromNode,
+  selectAllTags,
   selectTagsByNode,
   tagNode,
 } from "../store/graphSlice";
-import { Badge } from "react-bootstrap";
 import "./Tag.css";
+import CreateableSelect from "react-select/creatable";
 
 const TagSection = () => {
   const dispatch: AppDispatch = useDispatch();
   const { currentNode } = useSelector((state: any) => state.graph);
 
-  const [showTagInput, setShowTagInput] = useState(false);
+  const allTags = useSelector(selectAllTags);
   const tags = useSelector(selectTagsByNode(currentNode));
 
   if (!useSelector(nodeWithLabelExists(currentNode))) return null;
 
-  const toggleTagInput = () => {
-    setShowTagInput(!showTagInput);
+  console.log(tags);
+
+  const tagOptions = allTags?.map((tag) => ({ label: tag, value: tag }));
+  const selectedTags = tags?.map((tag) => ({ label: tag, value: tag }));
+
+  const handleChange = (newSelectedTags, actionMeta) => {
+    if (
+      actionMeta.action === "create-option" ||
+      actionMeta.action === "select-option"
+    ) {
+      const newTags = newSelectedTags.map((tagObj) => tagObj.value);
+      // Call your action to add the tags here
+      dispatch(tagNode({ nodeName: currentNode, tags: newTags }));
+    } else if (actionMeta.action === "remove-value") {
+      // Call your action to remove the tag here
+      dispatch(
+        removeTagFromNode({
+          nodeName: currentNode,
+          tag: actionMeta.removedValue.value,
+        }),
+      );
+    }
   };
 
-  const addTag = (event) => {
-    // Validate and add the tag.
-    const tag = event.target.value;
-
-    // Dispatch your async thunk here, then close the input
-    dispatch(tagNode({ nodeName: currentNode, tags: [tag] }));
-
-    setShowTagInput(false);
-  };
-
-  const removeTag = (tagToRemove) => {
-    // Dispatch another action to remove the tag
-    dispatch(removeTagFromNode({ nodeName: currentNode, tag: tagToRemove }));
-  };
+  console.log(tagOptions, selectedTags);
 
   return (
-    <>
-      <div className="tags">
-        {tags &&
-          tags.map((tag) => (
-            <Badge
-              key={tag}
-              data-toggle="tooltip"
-              data-placement="top"
-              title="Remove tag"
-              className="badge-hover badge-hover-red bg-secondary"
-              onClick={() => removeTag(tag)}
-            >
-              {tag}
-            </Badge>
-          ))}
-        <Badge
-          className="badge-hover bg-light text-secondary"
-          onClick={toggleTagInput}
-        >
-          + Add Tag
-        </Badge>
-      </div>
-      {showTagInput && (
-        <input
-          type="text"
-          onBlur={addTag}
-          placeholder="Enter tag..."
-          className="tag-input"
-        />
-      )}
-    </>
+    <div className="tags">
+      <CreateableSelect
+        isMulti
+        name="tags"
+        options={tagOptions || []}
+        value={selectedTags || []}
+        onChange={handleChange}
+        className="basic-multi-select"
+        classNamePrefix="select"
+        placeholder="Add tags..."
+        isClearable={false}
+        isSearchable={true}
+        closeMenuOnSelect={true}
+        onCreateOption={(inputValue) => {
+          const newOption = { label: inputValue, value: inputValue };
+          handleChange([...selectedTags, newOption], {
+            action: "create-option",
+          });
+        }}
+      />
+    </div>
   );
 };
 
