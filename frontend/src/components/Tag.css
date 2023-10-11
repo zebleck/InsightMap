@@ -1,0 +1,7 @@
+.badge-hover {
+	cursor: pointer;
+  }
+
+.badge-hover-red:hover {
+	background-color: red !important;
+  }

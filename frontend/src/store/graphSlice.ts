@@ -1,4 +1,9 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createAsyncThunk,
+  PayloadAction,
+  createSelector,
+} from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -15,6 +20,7 @@ export const fetchGraph = createAsyncThunk("graph/fetchGraph", async () => {
   return response.data;
 });
 
+// gets node content
 export const fetchNode = createAsyncThunk(
   "graph/fetchNode",
   async (nodeName: string) => {
@@ -60,16 +66,78 @@ export const deleteNode = createAsyncThunk(
   },
 );
 
+/*
+------------------
+TAGS
+------------------
+*/
+
+export const tagNode = createAsyncThunk(
+  "graph/tagNode",
+  async (payload: { nodeName: string; tags: string[] }) => {
+    await axiosInstance.post(`/graph/tagNode`, payload);
+    const response = await axiosInstance.get("/graph");
+    return response.data;
+  },
+);
+
+export const removeTagFromNode = createAsyncThunk(
+  "graph/removeTag",
+  async (payload: { nodeName: string; tag: string }) => {
+    await axiosInstance.post(`/graph/removeTag`, payload);
+    const response = await axiosInstance.get("/graph");
+    return response.data;
+  },
+);
+
+/*
+------------------
+SELECTORS
+------------------
+*/
+
 const findNodeIdByLabel = (label: string, nodes: any[]) => {
   const node = nodes.find((n) => n.label === label);
   return node ? node.id : null;
 };
+
+export const selectTagsByNode = (nodeName: string) =>
+  createSelector(
+    (state: any) => state.graph.nodes,
+    (nodes) => {
+      const nodeId = findNodeIdByLabel(nodeName, nodes);
+      if (nodeId) {
+        const node = nodes.find((n) => n.id === nodeId);
+        return node ? node.tags : [];
+      }
+      return [];
+    },
+  );
+
+export const selectAllTags = createSelector(
+  (state: any) => state.graph.nodes,
+  (nodes) => {
+    const tags = nodes
+      .map((n) => n.tags) // Extract tags from each node
+      .filter(Boolean) // Remove null or undefined values
+      .flat(); // Flatten the array
+
+    return Array.from(new Set(tags)); // Remove duplicates
+  },
+);
+
+export const nodeWithLabelExists = (label: string) =>
+  createSelector(
+    (state: any) => state.graph.nodes,
+    (nodes) => nodes.some((n) => n.label === label),
+  );
 
 const findNodeLabelById = (id: string, nodes: any[]) => {
   const node = nodes.find((n) => n.id === id);
   return node ? node.label : null;
 };
 
+// used to update the connected nodes state when the current node changes
 const updateConnectedNodes = (state) => {
   const currentNodeId = findNodeIdByLabel(state.currentNode, state.nodes);
   if (currentNodeId !== null) {
@@ -139,6 +207,20 @@ const graphSlice = createSlice({
       updateConnectedNodes(state);
       state.status = "fulfilled";
       toast.success("Deleted!");
+    });
+    builder.addCase(tagNode.fulfilled, (state, action) => {
+      state.nodes = action.payload.nodes;
+      state.edges = action.payload.edges;
+      updateConnectedNodes(state);
+      state.status = "fulfilled";
+      toast.success("Tag added!");
+    });
+    builder.addCase(removeTagFromNode.fulfilled, (state, action) => {
+      state.nodes = action.payload.nodes;
+      state.edges = action.payload.edges;
+      updateConnectedNodes(state);
+      state.status = "fulfilled";
+      toast.success("Tag removed!");
     });
   },
 });

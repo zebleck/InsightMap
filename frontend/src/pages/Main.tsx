@@ -15,6 +15,7 @@ import NodeList from "../components/NodeList";
 import RightSideButtons from "../components/RightSideButtons";
 import "./Main.css";
 import MarkdownIt from "markdown-it";
+import TagSection from "../components/TagSection";
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
@@ -119,6 +120,7 @@ const Main: React.FC = () => {
           </div>
           <div className="col-md-8">
             <h4>{currentNode}</h4>
+            <TagSection />
             <MarkdownEditor md={md} />
           </div>
           <div className="col-md-2">
