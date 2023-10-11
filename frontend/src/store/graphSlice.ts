@@ -126,31 +126,48 @@ export const selectAllTags = createSelector(
   },
 );
 
+export const selectConnectedNodeTags = createSelector(
+  (state: any) => state.graph.connectedNodes,
+  (connectedNodes) => {
+    const tags = connectedNodes
+      .map((n) => n.tags) // Extract tags from each node
+      .filter(Boolean) // Remove null or undefined values
+      .flat(); // Flatten the array
+
+    return Array.from(new Set(tags)); // Remove duplicates
+  },
+);
+
 export const nodeWithLabelExists = (label: string) =>
   createSelector(
     (state: any) => state.graph.nodes,
     (nodes) => nodes.some((n) => n.label === label),
   );
 
-const findNodeLabelById = (id: string, nodes: any[]) => {
+/*const findNodeLabelById = (id: string, nodes: any[]) => {
   const node = nodes.find((n) => n.id === id);
   return node ? node.label : null;
-};
+};*/
 
 // used to update the connected nodes state when the current node changes
 const updateConnectedNodes = (state) => {
   const currentNodeId = findNodeIdByLabel(state.currentNode, state.nodes);
   if (currentNodeId !== null) {
-    const connectedNodeLabels = state.edges
+    const connectedNodes = state.edges
       .filter(
         (edge) => edge.from === currentNodeId || edge.to === currentNodeId,
       )
       .map((edge) => {
         const targetNodeId = edge.from === currentNodeId ? edge.to : edge.from;
-        return findNodeLabelById(targetNodeId, state.nodes);
-      });
-    // Remove duplicates
-    state.connectedNodes = Array.from(new Set(connectedNodeLabels));
+        return state.nodes.find((node) => node.id === targetNodeId);
+      })
+      // Remove duplicates by id
+      .filter(
+        (node, index, self) =>
+          index === self.findIndex((t) => t.id === node.id),
+      );
+
+    state.connectedNodes = connectedNodes;
   } else {
     state.connectedNodes = [];
   }

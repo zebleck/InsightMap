@@ -3,13 +3,15 @@ import { useSelector } from "react-redux";
 import "./NodeList.css";
 import { Badge, Form } from "react-bootstrap";
 import { useParams } from "react-router-dom";
-import { selectAllTags } from "../store/graphSlice";
+import { selectAllTags, selectConnectedNodeTags } from "../store/graphSlice";
 import "./Tag.css";
 
 const NodeList = ({ handleLoad }) => {
   const { nodeName } = useParams();
   const { nodes, connectedNodes } = useSelector((state: any) => state.graph);
-  const tags = useSelector(selectAllTags);
+  const allTags = useSelector(selectAllTags);
+  const connectedNodeTags = useSelector(selectConnectedNodeTags);
+  const tags = nodeName ? connectedNodeTags : allTags;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTag, setSelectedTag] = useState(null);
@@ -31,11 +33,11 @@ const NodeList = ({ handleLoad }) => {
   const filteredConnectedNodes = connectedNodes
     .filter((node) => {
       return (
-        node.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        node.label.toLowerCase().includes(searchTerm.toLowerCase()) &&
         (!selectedTag || node.tags?.includes(selectedTag))
       );
     })
-    ?.sort((a, b) => a.localeCompare(b));
+    ?.sort((a, b) => a.label.localeCompare(b));
 
   const filteredNodes = nodes
     .filter((node) => {
@@ -45,6 +47,10 @@ const NodeList = ({ handleLoad }) => {
       );
     })
     ?.sort((a, b) => a.label.localeCompare(b.label));
+
+  console.log(connectedNodes);
+
+  console.log(nodes);
 
   if (nodeName && !filteredConnectedNodes.length) {
     return (
@@ -79,8 +85,6 @@ const NodeList = ({ handleLoad }) => {
       </div>
     );
   }
-
-  console.log(tags, selectedTag);
 
   return (
     <div className="node-list">
@@ -122,9 +126,9 @@ const NodeList = ({ handleLoad }) => {
           <h4>Connected with</h4>
           <ul>
             {filteredConnectedNodes.map((node) => (
-              <li key={node}>
-                <a href={node} onClick={(e) => handleLoad(e, node)}>
-                  {node}
+              <li key={node.label}>
+                <a href={node.label} onClick={(e) => handleLoad(e, node.label)}>
+                  {node.label}
                 </a>
               </li>
             ))}
