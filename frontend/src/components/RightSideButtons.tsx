@@ -4,7 +4,7 @@ import { FaFilePdf, FaPlus, FaSave, FaTrash } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store/store";
 import { removeStream } from "../store/streamSlice";
-import { setCurrentNode } from "../store/graphSlice";
+import { fetchNodeContent, setCurrentNode } from "../store/graphSlice";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import htmlToPdfmake from "html-to-pdfmake";
@@ -19,12 +19,6 @@ const fetchImageAsDataURL = async (url) => {
     reader.onerror = reject;
     reader.readAsDataURL(blob);
   });
-};
-
-const fetchNodeContent = async (nodeName) => {
-  const response = await fetch(`http://localhost:5000/graph/${nodeName}`);
-  const data = await response.json();
-  return data.success ? data.content : "";
 };
 
 const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {

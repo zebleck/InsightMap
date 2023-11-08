@@ -1,5 +1,52 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
+import { MentionsInput, Mention } from "react-mentions";
+import { useSelector } from "react-redux";
+import "./QuestionModal.css";
+import { fetchNodeContent } from "../store/graphSlice";
+
+const defaultStyle = {
+  control: {
+    backgroundColor: "#fff",
+    fontSize: 14,
+    fontWeight: "normal",
+  },
+
+  "&multiLine": {
+    control: {
+      fontFamily: "monospace",
+      minHeight: 63,
+    },
+    highlighter: {
+      padding: 9,
+      border: "1px solid transparent",
+    },
+    input: {
+      padding: 9,
+      border: "1px solid silver",
+    },
+  },
+
+  "&singleLine": {
+    display: "inline-block",
+    width: 180,
+  },
+
+  suggestions: {
+    list: {
+      backgroundColor: "white",
+      border: "1px solid rgba(0,0,0,0.15)",
+      fontSize: 14,
+    },
+    item: {
+      padding: "5px 15px",
+      borderBottom: "1px solid rgba(0,0,0,0.15)",
+      "&focused": {
+        backgroundColor: "#cee4e5",
+      },
+    },
+  },
+};
 
 const QuestionModal = ({ show, handleClose, handleSubmit, context }) => {
   const [question, setQuestion] = useState("");
@@ -7,18 +54,35 @@ const QuestionModal = ({ show, handleClose, handleSubmit, context }) => {
   const [newNodeName, setNewNodeName] = useState("");
   const [createNew, setCreateNew] = useState(false);
   const [createLink, setCreateLink] = useState(false);
+  const nodes = useSelector((state: any) => state.graph.nodes);
 
   useEffect(() => {
     if (show && inputRef.current) {
-      setQuestion(`"${context}"\n\n`);
-      const textarea = inputRef.current;
-      textarea.focus();
-      textarea.selectionStart = textarea.selectionEnd = textarea.value.length;
-      setTimeout(() => {
-        textarea.scrollTop = textarea.scrollHeight;
-      }, 0);
+      if (context) {
+        setQuestion(`"${context}"\n\n`);
+      }
+      inputRef.current.focus();
+    }
+    if (!show) {
+      setCreateNew(false);
+      setCreateLink(false);
+      setNewNodeName("");
+      setQuestion("");
     }
   }, [show]);
+
+  const handleAddMention = (id) => {
+    // Fetch the content of the node with the given id
+    const node = nodes.find((node) => node.id === id);
+    console.log(node);
+    if (node) {
+      fetchNodeContent(node.label).then((content) => {
+        setQuestion((question) =>
+          question.replace(`@[${node.label}]`, content),
+        );
+      });
+    }
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -26,8 +90,8 @@ const QuestionModal = ({ show, handleClose, handleSubmit, context }) => {
     }
   };
 
-  const handleInputChange = (e) => {
-    setQuestion(e.target.value);
+  const handleInputChange = (_, newValue, __, ___) => {
+    setQuestion(newValue);
   };
 
   const handleNewNodeNameChange = (e) => {
@@ -50,14 +114,23 @@ const QuestionModal = ({ show, handleClose, handleSubmit, context }) => {
         <Modal.Body>
           <Form.Group className="mb-3" controlId="answerTextArea">
             <Form.Label>Question</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={8}
+            <MentionsInput
               value={question}
               onChange={handleInputChange}
-              ref={inputRef}
+              inputRef={inputRef}
               onKeyDown={handleKeyDown}
-            />
+              style={defaultStyle}
+            >
+              <Mention
+                trigger="@"
+                data={nodes.map((node) => ({
+                  id: node.id,
+                  display: node.label,
+                }))}
+                onAdd={handleAddMention}
+                markup="@[__display__]"
+              />
+            </MentionsInput>
           </Form.Group>
           <Form.Check
             type="checkbox"

@@ -20,8 +20,6 @@ const TagSection = () => {
 
   if (!useSelector(nodeWithLabelExists(currentNode))) return null;
 
-  console.log(tags);
-
   const tagOptions = allTags?.map((tag) => ({ label: tag, value: tag }));
   const selectedTags = tags?.map((tag) => ({ label: tag, value: tag }));
 
@@ -43,8 +41,6 @@ const TagSection = () => {
       );
     }
   };
-
-  console.log(tagOptions, selectedTags);
 
   return (
     <div className="tags">

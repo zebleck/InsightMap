@@ -15,6 +15,24 @@ const sanitizeNodename = (nodeName: string) => {
   return nodeName.replace(/[^a-zA-Z0-9_ -.]/g, "");
 };
 
+/*
+------------------
+# PURE API CALLS
+------------------
+*/
+
+export const fetchNodeContent = async (nodeName) => {
+  const response = await axiosInstance.get(`/graph/${nodeName}`);
+  const data = await response.data;
+  return data.success ? data.content : "";
+};
+
+/*
+------------------
+# GRAPH THUNKS
+------------------
+*/
+
 export const fetchGraph = createAsyncThunk("graph/fetchGraph", async () => {
   const response = await axiosInstance.get("/graph");
   return response.data;

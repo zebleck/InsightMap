@@ -259,7 +259,7 @@ export default function SelectionCard({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleOpenLinkModal]);
+  }, [handleOpenLinkModal, handleOpenQuestionModal]);
 
   const handleColorChange = (color) => {
     const wrappedSelection = `<color:${color}>${selection}</color>`;
@@ -267,82 +267,89 @@ export default function SelectionCard({
     setShowColorPicker(false);
   };
 
-  if (!selection) return null;
-
   return (
-    <Card
-      className="SelectionCard"
-      style={{
-        left: `${position ? position.left : 0}px`,
-        top: `${position ? position.top : 0}px`,
-        overflow: "visible",
-      }}
-    >
-      <Card.Header className="SelectionCard-header">
-        <strong>What do?</strong>
-      </Card.Header>
-      <Card.Body className="SelectionCard-body">
-        <OverlayTrigger placement="bottom" overlay={tooltip("New node")}>
-          <Button onClick={handleOpenNewModal} className="button-left new">
-            <FaPlus />
-          </Button>
-        </OverlayTrigger>
-        <OverlayTrigger placement="bottom" overlay={tooltip("Link node")}>
-          <Button
-            onClick={handleOpenLinkModal}
-            className="button-inbetween link"
-          >
-            <FaLink />
-          </Button>
-        </OverlayTrigger>
-        <OverlayTrigger
-          placement="bottom"
-          overlay={tooltip("Remove node links")}
+    <>
+      {selection && (
+        <Card
+          className="SelectionCard"
+          style={{
+            left: `${position ? position.left : 0}px`,
+            top: `${position ? position.top : 0}px`,
+            overflow: "visible",
+          }}
         >
-          <Button
-            onClick={() => handleRemoveLinks()}
-            className="button-inbetween remove"
-          >
-            <FaTimes />
-          </Button>
-        </OverlayTrigger>
-        <OverlayTrigger placement="bottom" overlay={tooltip("Ask a question")}>
-          <Button
-            onClick={handleOpenQuestionModal}
-            className="button-inbetween ask"
-          >
-            <FaQuestion />
-          </Button>
-        </OverlayTrigger>
-        <div
-          onMouseEnter={() => setShowColorPicker(true)}
-          onMouseLeave={() => setShowColorPicker(false)}
-        >
-          <OverlayTrigger placement="top" overlay={tooltip("Color!")}>
-            <Button className="button-right color">
-              <FaPalette />
-            </Button>
-          </OverlayTrigger>
-          {showColorPicker && <ColorPicker colorSelected={handleColorChange} />}
-        </div>
-      </Card.Body>
-      <LinkingModal
-        show={showLinkModal}
-        handleClose={handleCloseLinkModal}
-        handleSubmit={handleLink}
-      />
+          <Card.Header className="SelectionCard-header">
+            <strong>What do?</strong>
+          </Card.Header>
+          <Card.Body className="SelectionCard-body">
+            <OverlayTrigger placement="bottom" overlay={tooltip("New node")}>
+              <Button onClick={handleOpenNewModal} className="button-left new">
+                <FaPlus />
+              </Button>
+            </OverlayTrigger>
+            <OverlayTrigger placement="bottom" overlay={tooltip("Link node")}>
+              <Button
+                onClick={handleOpenLinkModal}
+                className="button-inbetween link"
+              >
+                <FaLink />
+              </Button>
+            </OverlayTrigger>
+            <OverlayTrigger
+              placement="bottom"
+              overlay={tooltip("Remove node links")}
+            >
+              <Button
+                onClick={() => handleRemoveLinks()}
+                className="button-inbetween remove"
+              >
+                <FaTimes />
+              </Button>
+            </OverlayTrigger>
+            <OverlayTrigger
+              placement="bottom"
+              overlay={tooltip("Ask a question")}
+            >
+              <Button
+                onClick={handleOpenQuestionModal}
+                className="button-inbetween ask"
+              >
+                <FaQuestion />
+              </Button>
+            </OverlayTrigger>
+            <div
+              onMouseEnter={() => setShowColorPicker(true)}
+              onMouseLeave={() => setShowColorPicker(false)}
+            >
+              <OverlayTrigger placement="top" overlay={tooltip("Color!")}>
+                <Button className="button-right color">
+                  <FaPalette />
+                </Button>
+              </OverlayTrigger>
+              {showColorPicker && (
+                <ColorPicker colorSelected={handleColorChange} />
+              )}
+            </div>
+          </Card.Body>
+          <LinkingModal
+            show={showLinkModal}
+            handleClose={handleCloseLinkModal}
+            handleSubmit={handleLink}
+          />
+          <NewModal
+            show={showNewModal}
+            handleClose={handleCloseNewModal}
+            handleSubmit={handleNew}
+            selection={selection}
+          />
+        </Card>
+      )}
       <QuestionModal
         show={showQuestionModal}
         handleClose={handleCloseQuestionModal}
         handleSubmit={handleQuestion}
         context={selection}
       />
-      <NewModal
-        show={showNewModal}
-        handleClose={handleCloseNewModal}
-        handleSubmit={handleNew}
-        selection={selection}
-      />
-    </Card>
+    </>
   );
 }
