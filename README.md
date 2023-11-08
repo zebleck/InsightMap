@@ -2,7 +2,7 @@
   <img src="https://github.com/zebleck/InSightMap/assets/10833180/5943f178-d55d-40a7-ab52-1aa11f936b8a" height="400px" />
   
   
-  <h3 align="center">🧠 InSightMap</h3>
+  <h3 align="center">🧠 InsightMap</h3>
   <p align="center">A Next-generation Knowledge Management Platform</p>
 </p>
 
