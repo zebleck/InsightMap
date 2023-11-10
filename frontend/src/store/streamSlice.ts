@@ -45,12 +45,17 @@ export const initiateAnswerStream = createAsyncThunk(
     };
 
     dispatch(addStream({ id: streamId }));
+
+    return streamId;
   },
 );
 
 export const initiateRecommendationsStream = createAsyncThunk(
   "stream/initiate",
-  async (payload: { nodeName; nodeContent; onMessage; onError }, { dispatch }) => {
+  async (
+    payload: { nodeName; nodeContent; onMessage; onError },
+    { dispatch },
+  ) => {
     const { onMessage, onError, nodeName, nodeContent } = payload;
 
     const response = await axios.post(
@@ -79,6 +84,8 @@ export const initiateRecommendationsStream = createAsyncThunk(
     };
 
     dispatch(addStream({ id: streamId }));
+
+    return streamId;
   },
 );
 

@@ -289,27 +289,22 @@ def generate_answer_func(question):
 
 def generate_recommendations_func(current_node_name, current_node_content):
     # Fetch the current node's content and the names of connected nodes from the Neo4j graph database
-    # This could involve querying Neo4j for related nodes based on keywords, semantic similarity, etc.
-    # The specific implementation will depend on your application's requirements and the structure of your knowledge graph
-
     # Query Neo4j to get first degree nodes
     first_degree_nodes_query = "MATCH (n:KnowledgeNode {name: $nodeName})--(m) RETURN m.name"
     with driver.session() as session:
         result = session.run(first_degree_nodes_query, {"nodeName": current_node_name})
-    list_of_first_degree_nodes = [record["m.name"] for record in result]
+        list_of_first_degree_nodes = [record["m.name"] for record in result]
 
     # Query Neo4j to get second degree nodes
     second_degree_nodes_query = "MATCH (n:KnowledgeNode {name: $nodeName})--()--(m) RETURN m.name"
     with driver.session() as session:
         result = session.run(second_degree_nodes_query, {"nodeName": current_node_name})
-    list_of_second_degree_nodes = [record["m.name"] for record in result]
+        list_of_second_degree_nodes = [record["m.name"] for record in result]
 
-    # Craft a context text by concisely summarizing the node's content and listing the connected node names
-    context = f"Given the context about {current_node_name}, which includes this information: \"{current_node_content}\", and has information about related topics such as {list_of_first_degree_nodes} and extended connections including {list_of_second_degree_nodes}, suggest new topics or areas that could expand on this knowledge or provide deeper insight into related areas. Return as a list [topic1, topic2, ...]"
+    context = f"Given the context about {current_node_name}, which includes this information: \"{current_node_content}\", and has information about related topics such as {list_of_first_degree_nodes} and extended connections including {list_of_second_degree_nodes}, suggest new topics or areas that could expand on this knowledge or provide deeper insight into related areas. Return as a list [topic_name1, topic_name2, ...]"
 
     def generate():
 
-        # Use your existing setup for streaming API responses from OpenAI to handle the output incrementally if needed
         response = openai.ChatCompletion.create(
             model="gpt-4-1106-preview",
             messages=[{"role": "user", "content": context}],

@@ -1,13 +1,30 @@
-import React from "react";
-import { Button, Form, FormGroup, Spinner } from "react-bootstrap";
-import { FaFilePdf, FaPlus, FaSave, FaTrash } from "react-icons/fa";
+import React, { useState } from "react";
+import {
+  Button,
+  Form,
+  FormGroup,
+  OverlayTrigger,
+  Spinner,
+  Tooltip,
+} from "react-bootstrap";
+import {
+  FaFilePdf,
+  FaLightbulb,
+  FaPlus,
+  FaSave,
+  FaTrash,
+} from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch } from "../store/store";
-import { removeStream } from "../store/streamSlice";
+import {
+  initiateRecommendationsStream,
+  removeStream,
+} from "../store/streamSlice";
 import { fetchNodeContent, setCurrentNode } from "../store/graphSlice";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import htmlToPdfmake from "html-to-pdfmake";
+import RecommendationModal from "./RecommendationsModal";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 const fetchImageAsDataURL = async (url) => {
@@ -85,12 +102,43 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
   };
 
   const [showRecommendationModal, setShowRecommendationModal] = useState(false);
-  const [recommendationSessionId, setRecommendationSessionId] = useState(null);
+  const [recommendations, setRecommendations] = useState("");
+  const [recommandationsStreamId, setRecommendationsStreamId] = useState("");
 
-  const handleFetchRecommendations = async () => {
-    const sessionId = await dispatch(fetchRecommendations(currentNode)).unwrap(); 
-    setRecommendationSessionId(sessionId);
+  const handleRecommendations = async (nodeName, nodeContent) => {
+    const onError = (error) => {
+      console.error("EventSource failed:", error);
+    };
+
+    let response = "";
+
+    const onMessage = (event) => {
+      // Stream the output into the modal
+      setShowRecommendationModal(true);
+
+      const newChunk = event.data.replace(/<br>/g, "\n");
+      response += newChunk;
+      setRecommendations(response);
+    };
+
     setShowRecommendationModal(true);
+    const action = await dispatch(
+      initiateRecommendationsStream({
+        nodeName,
+        nodeContent,
+        onMessage,
+        onError,
+      }),
+    );
+    setRecommendationsStreamId(action.payload as string);
+  };
+
+  const handleStopRecommendations = () => {
+    setShowRecommendationModal(false);
+    setRecommendations("");
+    if (recommandationsStreamId) {
+      dispatch(removeStream(recommandationsStreamId));
+    }
   };
 
   return (
@@ -104,30 +152,56 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
           onChange={(e) => dispatch(setCurrentNode(e.target.value))}
         />
       </FormGroup>
-      <Button variant="warning" onClick={handleNew} className="mb-3">
-        <FaPlus />
-      </Button>
-      <Button variant="danger" onClick={handleDelete} className="mb-3">
-        <FaTrash />
-      </Button>
-      <Button variant="primary" onClick={handleSave} className="mb-3">
-        <FaSave />
-      </Button>
-      <Button variant="danger" onClick={exportToPdf} className="mb-3">
-        <FaFilePdf />
-      </Button>
-      <Button variant="info" onClick={handleFetchRecommendations} className="mb-3">
-    Generate Recommendations
-  </Button>;
+      <OverlayTrigger
+        placement="top"
+        overlay={<Tooltip id={`tooltip-top`}>Add Node</Tooltip>}
+      >
+        <Button variant="warning" onClick={handleNew} className="mb-3">
+          <FaPlus />
+        </Button>
+      </OverlayTrigger>
+      <OverlayTrigger
+        placement="top"
+        overlay={<Tooltip id={`tooltip-top`}>Delete Node</Tooltip>}
+      >
+        <Button variant="danger" onClick={handleDelete} className="mb-3">
+          <FaTrash />
+        </Button>
+      </OverlayTrigger>
+      <OverlayTrigger
+        placement="top"
+        overlay={<Tooltip id={`tooltip-top`}>Save Node</Tooltip>}
+      >
+        <Button variant="primary" onClick={handleSave} className="mb-3">
+          <FaSave />
+        </Button>
+      </OverlayTrigger>
+      <OverlayTrigger
+        placement="top"
+        overlay={<Tooltip id={`tooltip-top`}>Export to PDF</Tooltip>}
+      >
+        <Button variant="danger" onClick={exportToPdf} className="mb-3">
+          <FaFilePdf />
+        </Button>
+      </OverlayTrigger>
+      <OverlayTrigger
+        placement="top"
+        overlay={<Tooltip id={`tooltip-top`}>Generate Recommendations</Tooltip>}
+      >
+        <Button
+          variant="info"
+          onClick={() => handleRecommendations(currentNode, markdownContent)}
+          className="mb-3"
+        >
+          <FaLightbulb />
+        </Button>
+      </OverlayTrigger>
 
-  // Recommendation Modal
-  showRecommendationModal && (
-    <RecommendationModal
-      show={showRecommendationModal}
-      session_id={recommendationSessionId}
-      onHide={() => setShowRecommendationModal(false)}
-    />
-  )
+      <RecommendationModal
+        show={showRecommendationModal}
+        text={recommendations}
+        onHide={() => handleStopRecommendations()}
+      />
       {Object.keys(currentStreams).map((streamId, index) => (
         <Button
           variant="info"
