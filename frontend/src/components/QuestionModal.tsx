@@ -74,7 +74,6 @@ const QuestionModal = ({ show, handleClose, handleSubmit, context }) => {
   const handleAddMention = (id) => {
     // Fetch the content of the node with the given id
     const node = nodes.find((node) => node.id === id);
-    console.log(node);
     if (node) {
       fetchNodeContent(node.label).then((content) => {
         setQuestion((question) =>

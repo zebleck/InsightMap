@@ -84,6 +84,15 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
     pdfMake.createPdf(documentDefinition).download(`${currentNode}.pdf`);
   };
 
+  const [showRecommendationModal, setShowRecommendationModal] = useState(false);
+  const [recommendationSessionId, setRecommendationSessionId] = useState(null);
+
+  const handleFetchRecommendations = async () => {
+    const sessionId = await dispatch(fetchRecommendations(currentNode)).unwrap(); 
+    setRecommendationSessionId(sessionId);
+    setShowRecommendationModal(true);
+  };
+
   return (
     <div className="d-flex flex-column">
       <FormGroup className="mb-3">
@@ -107,6 +116,18 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
       <Button variant="danger" onClick={exportToPdf} className="mb-3">
         <FaFilePdf />
       </Button>
+      <Button variant="info" onClick={handleFetchRecommendations} className="mb-3">
+    Generate Recommendations
+  </Button>;
+
+  // Recommendation Modal
+  showRecommendationModal && (
+    <RecommendationModal
+      show={showRecommendationModal}
+      session_id={recommendationSessionId}
+      onHide={() => setShowRecommendationModal(false)}
+    />
+  )
       {Object.keys(currentStreams).map((streamId, index) => (
         <Button
           variant="info"

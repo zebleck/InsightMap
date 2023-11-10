@@ -287,6 +287,52 @@ def generate_answer_func(question):
 
     return generate
 
+def generate_recommendations_func(current_node_name, current_node_content):
+    # Fetch the current node's content and the names of connected nodes from the Neo4j graph database
+    # This could involve querying Neo4j for related nodes based on keywords, semantic similarity, etc.
+    # The specific implementation will depend on your application's requirements and the structure of your knowledge graph
+
+    # Query Neo4j to get first degree nodes
+    first_degree_nodes_query = "MATCH (n:KnowledgeNode {name: $nodeName})--(m) RETURN m.name"
+    with driver.session() as session:
+        result = session.run(first_degree_nodes_query, {"nodeName": current_node_name})
+    list_of_first_degree_nodes = [record["m.name"] for record in result]
+
+    # Query Neo4j to get second degree nodes
+    second_degree_nodes_query = "MATCH (n:KnowledgeNode {name: $nodeName})--()--(m) RETURN m.name"
+    with driver.session() as session:
+        result = session.run(second_degree_nodes_query, {"nodeName": current_node_name})
+    list_of_second_degree_nodes = [record["m.name"] for record in result]
+
+    # Craft a context text by concisely summarizing the node's content and listing the connected node names
+    context = f"Given the context about {current_node_name}, which includes this information: \"{current_node_content}\", and has information about related topics such as {list_of_first_degree_nodes} and extended connections including {list_of_second_degree_nodes}, suggest new topics or areas that could expand on this knowledge or provide deeper insight into related areas. Return as a list [topic1, topic2, ...]"
+
+    def generate():
+
+        # Use your existing setup for streaming API responses from OpenAI to handle the output incrementally if needed
+        response = openai.ChatCompletion.create(
+            model="gpt-4-1106-preview",
+            messages=[{"role": "user", "content": context}],
+            stream=True,
+        )
+
+        for chunk in response:
+            try:
+                text_chunk = chunk["choices"][0]["delta"].get("content", "")
+                finish_reason = chunk["choices"][0]["finish_reason"]
+
+                if finish_reason == "stop":
+                    yield "data: __complete__\n\n"
+
+                text_chunk = text_chunk.replace("\n", "<br>")
+                yield f"data: {text_chunk}\n\n"
+
+            except KeyError:
+                logging.info(f"Debug: Skipping incomplete chunk {chunk}")  # Debug line
+                continue
+    # Send the recommendations back to the frontend
+    return generate
+
 
 @app.route("/generate_tree", methods=["POST"])
 def generate_tree_endpoint():
@@ -302,6 +348,14 @@ def answer_endpoint():
     session_id = generate_unique_session_id()
     session_store[session_id] = generate_answer_func(question)
     return jsonify({"session_id": session_id, "question": question})
+
+@app.route("/generate_recommendations", methods=["POST"])
+def generate_recommendations_endpoint():
+    node_name = request.json.get("node_name")
+    node_content = request.json.get("node_content") 
+    session_id = generate_unique_session_id()  # Assume you have this function defined
+    session_store[session_id] = generate_recommendations_func(node_name, node_content)
+    return jsonify({"session_id": session_id, "node_name": node_name})
 
 
 @app.route("/request_sse")

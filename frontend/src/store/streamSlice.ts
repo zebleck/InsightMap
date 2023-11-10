@@ -48,6 +48,40 @@ export const initiateAnswerStream = createAsyncThunk(
   },
 );
 
+export const initiateRecommendationsStream = createAsyncThunk(
+  "stream/initiate",
+  async (payload: { nodeName; nodeContent; onMessage; onError }, { dispatch }) => {
+    const { onMessage, onError, nodeName, nodeContent } = payload;
+
+    const response = await axios.post(
+      `${axiosInstance.defaults.baseURL}/generate_recommendations`,
+      {
+        node_name: nodeName,
+        node_content: nodeContent,
+      },
+    );
+
+    const eventSource = new EventSource(
+      `${axiosInstance.defaults.baseURL}/request_sse?session_id=${response.data.session_id}`,
+    );
+
+    const streamId = `${axiosInstance.defaults.baseURL}-${Date.now()}`;
+    eventSources[streamId] = eventSource;
+
+    eventSource.onmessage = (event) => {
+      if (event.data === "__complete__") dispatch(removeStream(streamId));
+      onMessage(event);
+    };
+
+    eventSource.onerror = (error) => {
+      dispatch(removeStream(streamId));
+      onError(error);
+    };
+
+    dispatch(addStream({ id: streamId }));
+  },
+);
+
 const streamSlice = createSlice({
   name: "stream",
   initialState,
