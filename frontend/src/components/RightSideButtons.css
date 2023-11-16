@@ -1,0 +1,56 @@
+
+.new-node {
+    background-color: #E0D4FF;
+    color: #7B4DBF;
+    border: 2px solid #D2C4F6;
+}
+.new-node:hover {
+    background-color: #D2C4F6;
+    border: 2px solid #E0D4FF;
+}
+.delete-node {
+    background-color: #FADBD8;
+    color: #D43A1B;
+    border: 2px solid #F5B7B1;
+}
+.delete-node:hover {
+    background-color: #F5B7B1;
+    border: 2px solid #FADBD8;
+}
+.rename-node {
+    background-color: #D1E7FD;
+    color: #0D53A0;
+    border: 2px solid #BBD8FA;
+}
+.rename-node:hover {
+    background-color: #BBD8FA;
+    border: 2px solid #D1E7FD;
+}
+.save-node {
+    background-color: #A9DFBF;
+    color: #196F3D;
+    border: 2px solid #82E0AA;
+}
+.save-node:hover {
+    background-color: #82E0AA;
+    border: 2px solid #A9DFBF;
+}
+.export-pdf {
+    background-color: #FADBD8;
+    color: #D43A1B;
+    border: 2px solid #F5B7B1;
+}
+.export-pdf:hover {
+    background-color: #F5B7B1;
+    border: 2px solid #FADBD8;
+}
+.generate-recommendations {
+    background-color: #D4F5E2;
+    color: #0D5E37;
+    border: 2px solid #C3E9D0;
+}
+.generate-recommendations:hover {
+    background-color: #C3E9D0;
+    border: 2px solid #D4F5E2;
+}
+

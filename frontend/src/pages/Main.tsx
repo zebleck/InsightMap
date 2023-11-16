@@ -16,11 +16,13 @@ import RightSideButtons from "../components/RightSideButtons";
 import "./Main.css";
 import MarkdownIt from "markdown-it";
 import TagSection from "../components/TagSection";
+import { useHandleLoad } from "../hooks/useHandleLoad";
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
   const { nodeName } = useParams();
   const dispatch: AppDispatch = useDispatch();
+  const handleLoad = useHandleLoad();
   const { currentNode, markdownContent } = useSelector(
     (state: any) => state.graph,
   );
@@ -102,12 +104,6 @@ const Main: React.FC = () => {
       document.removeEventListener("auxclick", handleClick);
     };
   }, []);
-
-  const handleLoad = (e, nodeName) => {
-    e.preventDefault();
-    navigate(`/${nodeName}`);
-    dispatch(fetchNode(nodeName));
-  };
 
   const md = new MarkdownIt();
 

@@ -17,13 +17,17 @@ const initialState: StreamState = {
 
 export const initiateAnswerStream = createAsyncThunk(
   "stream/initiate",
-  async (payload: { question; onMessage; onError }, { dispatch }) => {
-    const { onMessage, onError, question } = payload;
+  async (
+    payload: { question; onMessage; onError; instructionsPrompt },
+    { dispatch },
+  ) => {
+    const { onMessage, onError, question, instructionsPrompt } = payload;
 
     const response = await axios.post(
       `${axiosInstance.defaults.baseURL}/generate_answer`,
       {
         question: question,
+        system_prompt: instructionsPrompt,
       },
     );
 

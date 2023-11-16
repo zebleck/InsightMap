@@ -24,6 +24,9 @@ import { fetchNodeContent, setCurrentNode } from "../store/graphSlice";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import htmlToPdfmake from "html-to-pdfmake";
+import RenameButton from "./RenameButton";
+import classNames from "classnames";
+import "./RightSideButtons.css";
 import RecommendationModal from "./RecommendationsModal";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
@@ -141,78 +144,141 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
     }
   };
 
-  return (
-    <div className="d-flex flex-column">
-      <FormGroup className="mb-3">
-        <Form.Label>nodeName</Form.Label>
-        <Form.Control
-          type="nodeName"
-          placeholder="Enter nodeName"
-          value={currentNode}
-          onChange={(e) => dispatch(setCurrentNode(e.target.value))}
-        />
-      </FormGroup>
-      <OverlayTrigger
-        placement="top"
-        overlay={<Tooltip id={`tooltip-top`}>Add Node</Tooltip>}
-      >
-        <Button variant="warning" onClick={handleNew} className="mb-3">
-          <FaPlus />
-        </Button>
-      </OverlayTrigger>
-      <OverlayTrigger
-        placement="top"
-        overlay={<Tooltip id={`tooltip-top`}>Delete Node</Tooltip>}
-      >
-        <Button variant="danger" onClick={handleDelete} className="mb-3">
-          <FaTrash />
-        </Button>
-      </OverlayTrigger>
-      <OverlayTrigger
-        placement="top"
-        overlay={<Tooltip id={`tooltip-top`}>Save Node</Tooltip>}
-      >
-        <Button variant="primary" onClick={handleSave} className="mb-3">
-          <FaSave />
-        </Button>
-      </OverlayTrigger>
-      <OverlayTrigger
-        placement="top"
-        overlay={<Tooltip id={`tooltip-top`}>Export to PDF</Tooltip>}
-      >
-        <Button variant="danger" onClick={exportToPdf} className="mb-3">
-          <FaFilePdf />
-        </Button>
-      </OverlayTrigger>
-      <OverlayTrigger
-        placement="top"
-        overlay={<Tooltip id={`tooltip-top`}>Generate Recommendations</Tooltip>}
-      >
-        <Button
-          variant="info"
-          onClick={() => handleRecommendations(currentNode, markdownContent)}
-          className="mb-3"
-        >
-          <FaLightbulb />
-        </Button>
-      </OverlayTrigger>
+  const baseButtonStyle =
+    "d-inline-flex justify-content-center align-items-center";
+  const circleButtonSize = "50px"; // this should be equal to maintain the circle shape
 
+  // Inline styles for circular buttons
+  const circularButtonStyle = {
+    width: circleButtonSize,
+    height: circleButtonSize,
+    borderRadius: "50%", // this makes the button a circle
+    fontSize: "1.5rem", // adjust font size as necessary
+    padding: "0", // reset padding to maintain the circle shape
+  };
+
+  return (
+    <div className="d-flex flex-wrap my-4">
+      <div className="d-flex flex-column">
+        <FormGroup className="mb-3">
+          <Form.Label className="font-weight-bold">Node Name</Form.Label>
+          <Form.Control
+            className="py-2"
+            type="text"
+            placeholder="Enter node name"
+            value={currentNode}
+            onChange={(e) => dispatch(setCurrentNode(e.target.value))}
+          />
+        </FormGroup>
+        <div className="mb-3">
+          <p className="mb-2 text-center text-muted">
+            <strong>Node Operations</strong>
+          </p>
+          <div className="d-flex flex-row justify-content-center">
+            <OverlayTrigger
+              placement="top"
+              overlay={<Tooltip id={`tooltip-top`}>New Node</Tooltip>}
+            >
+              <Button
+                onClick={handleNew}
+                className={classNames("new-node", "me-2", baseButtonStyle)}
+                style={circularButtonStyle}
+              >
+                <FaPlus />
+              </Button>
+            </OverlayTrigger>
+            <OverlayTrigger
+              placement="top"
+              overlay={<Tooltip id={`tooltip-top`}>Delete Node</Tooltip>}
+            >
+              <Button
+                onClick={handleDelete}
+                className={classNames("delete-node", "me-2", baseButtonStyle)}
+                style={circularButtonStyle}
+              >
+                <FaTrash />
+              </Button>
+            </OverlayTrigger>
+            <RenameButton
+              className={classNames("rename-node", "me-2", baseButtonStyle)}
+              style={circularButtonStyle}
+            />
+            <OverlayTrigger
+              placement="top"
+              overlay={<Tooltip id={`tooltip-top`}>Save Node</Tooltip>}
+            >
+              <Button
+                onClick={handleSave}
+                className={classNames("save-node", "me-2", baseButtonStyle)}
+                style={circularButtonStyle}
+              >
+                <FaSave />
+              </Button>
+            </OverlayTrigger>
+          </div>
+        </div>
+        <div className="mb-3">
+          <p className="mb-2 text-center text-muted">
+            <strong>Additional</strong>
+          </p>
+          <div className="d-flex flex-row justify-content-center">
+            <OverlayTrigger
+              placement="top"
+              overlay={<Tooltip id={`tooltip-top`}>Export to PDF</Tooltip>}
+            >
+              <Button
+                onClick={exportToPdf}
+                className={classNames("export-pdf", "me-2", baseButtonStyle)}
+                style={circularButtonStyle}
+              >
+                <FaFilePdf />
+              </Button>
+            </OverlayTrigger>
+            <OverlayTrigger
+              placement="top"
+              overlay={
+                <Tooltip id={`tooltip-top`}>Generate Recommendations</Tooltip>
+              }
+            >
+              <Button
+                onClick={() =>
+                  handleRecommendations(currentNode, markdownContent)
+                }
+                className={classNames(
+                  "generate-recommendations",
+                  "me-2",
+                  baseButtonStyle,
+                )}
+                style={circularButtonStyle}
+              >
+                <FaLightbulb />
+              </Button>
+            </OverlayTrigger>
+          </div>
+        </div>
+        {Object.keys(currentStreams).map((streamId, index) => (
+          <div key={streamId}>
+            <p className="mb-2 text-center text-muted">
+              <strong>AI Streams</strong>
+            </p>
+            <div className="d-flex flex-row justify-content-center">
+              <Button
+                variant="info"
+                onClick={() => handleStopStream(streamId)}
+                className="mb-3"
+              >
+                <Spinner animation="border" size="sm" className="mr-2" /> Stop
+                Stream {index + 1}
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
       <RecommendationModal
         show={showRecommendationModal}
         text={recommendations}
         onHide={() => handleStopRecommendations()}
       />
-      {Object.keys(currentStreams).map((streamId, index) => (
-        <Button
-          variant="info"
-          onClick={() => handleStopStream(streamId)}
-          className="mb-3"
-          key={streamId}
-        >
-          <Spinner animation="border" size="sm" className="mr-2" /> Stop Stream{" "}
-          {index + 1}
-        </Button>
-      ))}
     </div>
   );
 };

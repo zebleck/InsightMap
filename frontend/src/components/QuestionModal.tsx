@@ -54,6 +54,8 @@ const QuestionModal = ({ show, handleClose, handleSubmit, context }) => {
   const [newNodeName, setNewNodeName] = useState("");
   const [createNew, setCreateNew] = useState(false);
   const [createLink, setCreateLink] = useState(false);
+  const [instructionsPrompt, setInstructionsPrompt] = useState("");
+  const [showInstructionsPrompt, setShowInstructionsPrompt] = useState(false);
   const nodes = useSelector((state: any) => state.graph.nodes);
 
   useEffect(() => {
@@ -66,18 +68,32 @@ const QuestionModal = ({ show, handleClose, handleSubmit, context }) => {
     if (!show) {
       setCreateNew(false);
       setCreateLink(false);
+      setInstructionsPrompt("");
+      setShowInstructionsPrompt(false);
       setNewNodeName("");
       setQuestion("");
     }
   }, [show]);
 
-  const handleAddMention = (id) => {
+  const handleAddQuestionMention = (id) => {
     // Fetch the content of the node with the given id
     const node = nodes.find((node) => node.id === id);
     if (node) {
       fetchNodeContent(node.label).then((content) => {
         setQuestion((question) =>
           question.replace(`@[${node.label}]`, content),
+        );
+      });
+    }
+  };
+
+  const handleAddInstructionsMention = (id) => {
+    // Fetch the content of the node with the given id
+    const node = nodes.find((node) => node.id === id);
+    if (node) {
+      fetchNodeContent(node.label).then((content) => {
+        setInstructionsPrompt((instructionsPrompt) =>
+          instructionsPrompt.replace(`@[${node.label}]`, content),
         );
       });
     }
@@ -99,7 +115,12 @@ const QuestionModal = ({ show, handleClose, handleSubmit, context }) => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    handleSubmit(question, createNew ? newNodeName : null, createLink);
+    handleSubmit(
+      question,
+      instructionsPrompt,
+      createNew ? newNodeName : null,
+      createLink,
+    );
     setQuestion("");
     handleClose();
   };
@@ -126,7 +147,7 @@ const QuestionModal = ({ show, handleClose, handleSubmit, context }) => {
                   id: node.id,
                   display: node.label,
                 }))}
-                onAdd={handleAddMention}
+                onAdd={handleAddQuestionMention}
                 markup="@[__display__]"
               />
             </MentionsInput>
@@ -137,6 +158,32 @@ const QuestionModal = ({ show, handleClose, handleSubmit, context }) => {
             checked={createNew}
             onChange={(e) => setCreateNew(e.target.checked)}
           />
+          <Form.Check
+            type="checkbox"
+            label="Use custom system prompt"
+            checked={showInstructionsPrompt}
+            onChange={(e) => setShowInstructionsPrompt(e.target.checked)}
+          />
+          {showInstructionsPrompt && (
+            <Form.Group className="mt-3 mb-3" controlId="customPrompt">
+              <Form.Label>Custom System Prompt</Form.Label>
+              <MentionsInput
+                value={instructionsPrompt}
+                onChange={(event, newValue) => setInstructionsPrompt(newValue)}
+                style={defaultStyle}
+              >
+                <Mention
+                  trigger="@"
+                  data={nodes.map((node) => ({
+                    id: node.id,
+                    display: node.label,
+                  }))}
+                  onAdd={handleAddInstructionsMention}
+                  markup="@[__display__]"
+                />
+              </MentionsInput>
+            </Form.Group>
+          )}
           {createNew && (
             <>
               <Form.Group className="mt-3 mb-3" controlId="newNodeName">

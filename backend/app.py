@@ -149,6 +149,55 @@ def read_node(nodename):
         else:
             return jsonify(success=False), 404
 
+@app.route("/graph/renameNode", methods=["POST"])
+def rename_node():
+    data = request.json
+    old_node_name = data.get("oldNodeName")
+    new_node_name = data.get("newNodeName")
+
+    with driver.session() as session:
+        # Update the node name
+        session.run(
+            "MATCH (n:KnowledgeNode {name: $oldNodeName}) SET n.name = $newNodeName",
+            {"oldNodeName": old_node_name, "newNodeName": new_node_name},
+        )
+
+        # Update the links
+        session.run(
+            """
+            MATCH (n:KnowledgeNode)-[r:LINKS_TO]->(m:KnowledgeNode {name: $oldNodeName})
+            SET r.name = $newNodeName
+            """,
+            {"oldNodeName": old_node_name, "newNodeName": new_node_name},
+        )
+
+        # Fetch the content of the linked nodes
+        result = session.run(
+            """
+            MATCH (n:KnowledgeNode)-[r:LINKS_TO]->(m:KnowledgeNode)
+            WHERE m.content CONTAINS $oldNodeName
+            RETURN m.name AS name, m.content AS content
+            """,
+            {"oldNodeName": old_node_name},
+        )
+
+        # Perform the replacement in Python and update the content in the database
+        for record in result:
+            linked_node_name = record["name"]
+            linked_node_content = record["content"]
+            updated_content = re.sub(
+                f"<node:{old_node_name}>", f"<node:{new_node_name}>", linked_node_content
+            )
+            session.run(
+                """
+                MATCH (m:KnowledgeNode {name: $name})
+                SET m.content = $content
+                """,
+                {"name": linked_node_name, "content": updated_content},
+            )
+
+    return jsonify({"status": "Node renamed"})
+
 
 """
 -----------------------
@@ -260,13 +309,23 @@ def generate_tree_func(selection):
     return generate
 
 
-def generate_answer_func(question):
+def generate_answer_func(question, system_prompt):
     prompt = f"Answer the following question: {question}. Return in markdown with latex support ($)."
+
+    if system_prompt:
+        initial_messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
+        ]
+    else:
+        initial_messages = [
+            {"role": "user", "content": prompt},
+        ]
 
     def generate():
         response = openai.ChatCompletion.create(
             model="gpt-4-1106-preview",
-            messages=[{"role": "user", "content": prompt}],
+            messages=initial_messages,
             stream=True,
         )
 
@@ -340,8 +399,9 @@ def generate_tree_endpoint():
 @app.route("/generate_answer", methods=["POST"])
 def answer_endpoint():
     question = request.json.get("question")
+    system_prompt = request.json.get("system_prompt")
     session_id = generate_unique_session_id()
-    session_store[session_id] = generate_answer_func(question)
+    session_store[session_id] = generate_answer_func(question, system_prompt)
     return jsonify({"session_id": session_id, "question": question})
 
 @app.route("/generate_recommendations", methods=["POST"])

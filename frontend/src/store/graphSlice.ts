@@ -84,6 +84,15 @@ export const deleteNode = createAsyncThunk(
   },
 );
 
+export const renameNode = createAsyncThunk(
+  "graph/renameNode",
+  async (payload: { oldNodeName: string; newNodeName: string }) => {
+    await axiosInstance.post(`/graph/renameNode`, payload);
+    const response = await axiosInstance.get("/graph");
+    return response.data;
+  },
+);
+
 /*
 ------------------
 TAGS
@@ -256,6 +265,13 @@ const graphSlice = createSlice({
       updateConnectedNodes(state);
       state.status = "fulfilled";
       toast.success("Tag removed!");
+    });
+    builder.addCase(renameNode.fulfilled, (state, action) => {
+      state.nodes = action.payload.nodes;
+      state.edges = action.payload.edges;
+      updateConnectedNodes(state);
+      state.status = "fulfilled";
+      toast.success("Renamed!");
     });
   },
 });

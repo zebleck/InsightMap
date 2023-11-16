@@ -15,6 +15,7 @@
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.4.0",
     "bootstrap": "^5.3.1",
+    "classnames": "^2.3.2",
     "easymde": "^2.18.0",
     "html-to-pdfmake": "^2.4.25",
     "katex": "^0.16.8",

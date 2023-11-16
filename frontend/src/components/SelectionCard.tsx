@@ -55,6 +55,7 @@ export default function SelectionCard({
 
   const handleQuestion = async (
     question,
+    instructionsPrompt,
     newNodeName = null,
     createLink = false,
   ) => {
@@ -119,7 +120,14 @@ export default function SelectionCard({
       fromCursor = codeMirrorInstance.getCursor(false);
     }
     lastCursor = fromCursor;
-    dispatch(initiateAnswerStream({ question, onMessage, onError }));
+    dispatch(
+      initiateAnswerStream({
+        question,
+        onMessage,
+        onError,
+        instructionsPrompt,
+      }),
+    );
   };
 
   const handleLink = (selectedNode, linkAll = false) => {
