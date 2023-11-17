@@ -327,6 +327,8 @@ def generate_answer_func(question, system_prompt):
             model="gpt-4-1106-preview",
             messages=initial_messages,
             stream=True,
+            max_tokens=4096,
+            temperature=0.0,
         )
 
         for chunk in response:

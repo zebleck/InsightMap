@@ -125,6 +125,11 @@ const QuestionModal = ({ show, handleClose, handleSubmit, context }) => {
     handleClose();
   };
 
+  const estimateTokens = (inputText) => {
+    const averageTokenLength = 4;
+    return Math.ceil(inputText.length / averageTokenLength);
+  };
+
   return (
     <Modal show={show} onHide={handleClose}>
       <form onSubmit={handleFormSubmit}>
@@ -133,7 +138,9 @@ const QuestionModal = ({ show, handleClose, handleSubmit, context }) => {
         </Modal.Header>
         <Modal.Body>
           <Form.Group className="mb-3" controlId="answerTextArea">
-            <Form.Label>Question</Form.Label>
+            <Form.Label>
+              Question (~{estimateTokens(question)} tokens)
+            </Form.Label>
             <MentionsInput
               value={question}
               onChange={handleInputChange}
