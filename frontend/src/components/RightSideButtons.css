@@ -53,4 +53,13 @@
     background-color: #C3E9D0;
     border: 2px solid #D4F5E2;
 }
+.copy-link {
+    background-color: #D1E7FD;
+    color: #0D53A0;
+    border: 2px solid #BBD8FA;
+}
+.copy-link:hover {
+    background-color: #BBD8FA;
+    border: 2px solid #D1E7FD;
+}
 

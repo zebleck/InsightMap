@@ -10,6 +10,7 @@ import {
 import {
   FaFilePdf,
   FaLightbulb,
+  FaLink,
   FaPlus,
   FaSave,
   FaTrash,
@@ -28,6 +29,7 @@ import RenameButton from "./RenameButton";
 import classNames from "classnames";
 import "./RightSideButtons.css";
 import RecommendationModal from "./RecommendationsModal";
+import { toast } from "react-toastify";
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 const fetchImageAsDataURL = async (url) => {
@@ -144,6 +146,11 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
     }
   };
 
+  const copyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success("Link copied to clipboard");
+  };
+
   const baseButtonStyle =
     "d-inline-flex justify-content-center align-items-center";
   const circleButtonSize = "50px"; // this should be equal to maintain the circle shape
@@ -222,6 +229,18 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
             <strong>Additional</strong>
           </p>
           <div className="d-flex flex-row justify-content-center">
+            <OverlayTrigger
+              placement="top"
+              overlay={<Tooltip id={`tooltip-top`}>Copy Link</Tooltip>}
+            >
+              <Button
+                onClick={copyLink}
+                className={classNames("copy-link", "me-2", baseButtonStyle)}
+                style={circularButtonStyle}
+              >
+                <FaLink />
+              </Button>
+            </OverlayTrigger>
             <OverlayTrigger
               placement="top"
               overlay={<Tooltip id={`tooltip-top`}>Export to PDF</Tooltip>}
