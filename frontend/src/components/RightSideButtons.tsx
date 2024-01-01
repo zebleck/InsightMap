@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Form,
@@ -21,7 +21,12 @@ import {
   initiateRecommendationsStream,
   removeStream,
 } from "../store/streamSlice";
-import { fetchNodeContent, setCurrentNode } from "../store/graphSlice";
+import {
+  fetchNodeContent,
+  getFilesPathThunk,
+  setCurrentNode,
+  setFilesPathThunk,
+} from "../store/graphSlice";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import htmlToPdfmake from "html-to-pdfmake";
@@ -43,67 +48,69 @@ const fetchImageAsDataURL = async (url) => {
   });
 };
 
+const exportToPdf = async (currentNode, content, md) => {
+  // Find and expand the node links that are also headings
+  const headingNodeRegex = /## \[(.*?)\]\(<node:(.*?)>\)/g;
+  let headingNodeMatch;
+  let expandedMarkdownContent = content;
+
+  while ((headingNodeMatch = headingNodeRegex.exec(content)) !== null) {
+    const [, linkText, nodeName] = headingNodeMatch;
+    const nodeContent = await fetchNodeContent(nodeName);
+    const expandedContent = `## ${linkText}\n\n${nodeContent}`;
+    expandedMarkdownContent = expandedMarkdownContent.replace(
+      headingNodeMatch[0],
+      expandedContent,
+    );
+  }
+
+  // Fetch and convert images to data URL
+  const imageRegex = /!\[.*\]\(img:(.+?)\)/g;
+  let match;
+  let markdownContentWithDataURLs = expandedMarkdownContent;
+
+  // Replace image links with data URLs
+  while ((match = imageRegex.exec(content)) !== null) {
+    const [, imageHash] = match;
+    const url = `http://localhost:5000/uploaded_images/${imageHash}`;
+    const dataURL = await fetchImageAsDataURL(url);
+    markdownContentWithDataURLs = markdownContentWithDataURLs.replace(
+      match[0],
+      `![](${dataURL})`,
+    );
+  }
+
+  // Replace node links back to their original form
+  const nodeRegex = /\[(.*?)\]\(<node:(.*?)>\)/g;
+  const markdownContentWithNodes = markdownContentWithDataURLs.replace(
+    nodeRegex,
+    (match, text) => {
+      return text; // Replace with the text only, removing the node link
+    },
+  );
+
+  const htmlContent = md.render(markdownContentWithNodes);
+  const pdfMakeContent = htmlToPdfmake(htmlContent);
+  const documentDefinition = {
+    content: pdfMakeContent,
+  };
+
+  pdfMake.createPdf(documentDefinition).download(`${currentNode}.pdf`);
+};
+
 const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
   const { currentStreams } = useSelector((state: any) => state.stream);
-  const { currentNode, markdownContent } = useSelector(
+  const { currentNode, markdownContent, filesPath, nodes } = useSelector(
     (state: any) => state.graph,
   );
   const dispatch: AppDispatch = useDispatch();
 
+  useEffect(() => {
+    dispatch(getFilesPathThunk());
+  }, []);
+
   const handleStopStream = (streamId: string) => {
     dispatch(removeStream(streamId));
-  };
-
-  const exportToPdf = async () => {
-    // Find and expand the node links that are also headings
-    const headingNodeRegex = /## \[(.*?)\]\(<node:(.*?)>\)/g;
-    let headingNodeMatch;
-    let expandedMarkdownContent = markdownContent;
-
-    while (
-      (headingNodeMatch = headingNodeRegex.exec(markdownContent)) !== null
-    ) {
-      const [, linkText, nodeName] = headingNodeMatch;
-      const nodeContent = await fetchNodeContent(nodeName);
-      const expandedContent = `## ${linkText}\n\n${nodeContent}`;
-      expandedMarkdownContent = expandedMarkdownContent.replace(
-        headingNodeMatch[0],
-        expandedContent,
-      );
-    }
-
-    // Fetch and convert images to data URL
-    const imageRegex = /!\[.*\]\(img:(.+?)\)/g;
-    let match;
-    let markdownContentWithDataURLs = expandedMarkdownContent;
-
-    // Replace image links with data URLs
-    while ((match = imageRegex.exec(markdownContent)) !== null) {
-      const [, imageHash] = match;
-      const url = `http://localhost:5000/uploaded_images/${imageHash}`;
-      const dataURL = await fetchImageAsDataURL(url);
-      markdownContentWithDataURLs = markdownContentWithDataURLs.replace(
-        match[0],
-        `![](${dataURL})`,
-      );
-    }
-
-    // Replace node links back to their original form
-    const nodeRegex = /\[(.*?)\]\(<node:(.*?)>\)/g;
-    const markdownContentWithNodes = markdownContentWithDataURLs.replace(
-      nodeRegex,
-      (match, text) => {
-        return text; // Replace with the text only, removing the node link
-      },
-    );
-
-    const htmlContent = md.render(markdownContentWithNodes);
-    const pdfMakeContent = htmlToPdfmake(htmlContent);
-    const documentDefinition = {
-      content: pdfMakeContent,
-    };
-
-    pdfMake.createPdf(documentDefinition).download(`${currentNode}.pdf`);
   };
 
   const [showRecommendationModal, setShowRecommendationModal] = useState(false);
@@ -167,6 +174,18 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
   return (
     <div className="d-flex flex-wrap my-4">
       <div className="d-flex flex-column">
+        <FormGroup className="mb-3">
+          <Form.Label className="font-weight-bold">
+            Files path (#Nodes: {nodes.length})
+          </Form.Label>
+          <Form.Control
+            className="py-2"
+            type="text"
+            placeholder="Enter path of files directory"
+            value={filesPath}
+            onChange={(e) => dispatch(setFilesPathThunk(e.target.value))}
+          />
+        </FormGroup>
         <FormGroup className="mb-3">
           <Form.Label className="font-weight-bold">Node Name</Form.Label>
           <Form.Control
@@ -246,7 +265,7 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
               overlay={<Tooltip id={`tooltip-top`}>Export to PDF</Tooltip>}
             >
               <Button
-                onClick={exportToPdf}
+                onClick={() => exportToPdf(currentNode, markdownContent, md)}
                 className={classNames("export-pdf", "me-2", baseButtonStyle)}
                 style={circularButtonStyle}
               >
