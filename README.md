@@ -13,7 +13,7 @@ InsightMap is a knowledge management platform that seamlessly integrates a vast 
 ## Features
 
 - 📝 **Integrated Markdown Editor**: Features a fully-equipped Markdown editor that supports LaTeX for mathematical expressions and coloring, allowing you to document topics in a stylistically versatile and mathematical format.
-- 🌐 **Graph-Based Knowledge Management**: Utilizing Neo4j, the backend supports dynamic linking of nodes, representing different pieces of information or ideas.
+- 🌐 **File-Based Knowledge Management**: The backend supports dynamic linking of nodes, representing different pieces of information or ideas, using Markdown files.
 - ⭐ **User-Focused Design**: From easy node linking to two-way automatic linking between nodes and dynamic navigation, InSightMap aims for an intuitive and frictionless user experience.
 - 🤖 **Integration of generative AI**: Answer questions and generate knowledge nodes using latest OpenAI model `gpt-4-1106-preview`.
 - 🖼️ **Image support**: Paste images from your clipboard into the markdown editor.
@@ -21,7 +21,7 @@ InsightMap is a knowledge management platform that seamlessly integrates a vast 
 
 ## Tech Stack
 
-- Backend: Python + Neo4J
+- Backend: Python
 - Frontend: React.js including lots of libraries. It's like the python of frontends!
 - Styling: Bootstrap
 - Markdown Rendering: `markdown-it`, `react-simplemde-editor`, `markdown-it-katex`

@@ -28,5 +28,3 @@ backend/uploaded_images
 backend/files
 
 .env
-
-neo4j
