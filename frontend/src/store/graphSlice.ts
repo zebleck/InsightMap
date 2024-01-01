@@ -27,38 +27,11 @@ export const fetchNodeContent = async (nodeName) => {
   return data.success ? data.content : "";
 };
 
-export const getFilesPath = async () => {
-  const response = await axiosInstance.get(`/files_path`);
-  return response.data.path;
-};
-
-export const setFilesPath = async (path) => {
-  const response = await axiosInstance.post(`/files_path`, { path });
-  return response.data.success;
-};
-
 /*
 ------------------
 # GRAPH THUNKS
 ------------------
 */
-
-export const setFilesPathThunk = createAsyncThunk(
-  "graph/setFilesPath",
-  async (path: string, { dispatch }) => {
-    const success = await setFilesPath(path);
-    await dispatch(fetchGraph());
-    return { path, success };
-  },
-);
-
-export const getFilesPathThunk = createAsyncThunk(
-  "graph/getFilesPath",
-  async () => {
-    const path = await getFilesPath();
-    return path;
-  },
-);
 
 export const fetchGraph = createAsyncThunk("graph/fetchGraph", async () => {
   const response = await axiosInstance.get("/graph");
@@ -235,7 +208,6 @@ const graphSlice = createSlice({
     markdownContent: "",
     nodes: [],
     edges: [],
-    filesPath: "",
     status: "idle",
   },
   reducers: {
@@ -300,14 +272,6 @@ const graphSlice = createSlice({
       updateConnectedNodes(state);
       state.status = "fulfilled";
       toast.success("Renamed!");
-    });
-    builder.addCase(getFilesPathThunk.fulfilled, (state, action) => {
-      state.filesPath = action.payload;
-    });
-    builder.addCase(setFilesPathThunk.fulfilled, (state, action) => {
-      if (action.payload.success) {
-        state.filesPath = action.payload.path;
-      }
     });
   },
 });

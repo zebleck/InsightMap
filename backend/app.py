@@ -88,7 +88,7 @@ File endpoints
 """
 
 
-@app.route("/files_path", methods=["GET", "POST"])
+"""@app.route("/files_path", methods=["GET", "POST"])
 def files_path_endpoint():
     if request.method == "POST":
         global files_path
@@ -96,7 +96,7 @@ def files_path_endpoint():
         files_path = request.json.get("path")
         return jsonify(success=True)
     else:
-        return jsonify(path=files_path)
+        return jsonify(path=files_path)"""
 
 
 @app.route("/graph/saveNode/<nodename>", methods=["POST"])

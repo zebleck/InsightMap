@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Button,
   Form,
@@ -21,12 +21,7 @@ import {
   initiateRecommendationsStream,
   removeStream,
 } from "../store/streamSlice";
-import {
-  fetchNodeContent,
-  getFilesPathThunk,
-  setCurrentNode,
-  setFilesPathThunk,
-} from "../store/graphSlice";
+import { fetchNodeContent, setCurrentNode } from "../store/graphSlice";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import htmlToPdfmake from "html-to-pdfmake";
@@ -100,14 +95,10 @@ const exportToPdf = async (currentNode, content, md) => {
 
 const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
   const { currentStreams } = useSelector((state: any) => state.stream);
-  const { currentNode, markdownContent, filesPath, nodes } = useSelector(
+  const { currentNode, markdownContent } = useSelector(
     (state: any) => state.graph,
   );
   const dispatch: AppDispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(getFilesPathThunk());
-  }, []);
 
   const handleStopStream = (streamId: string) => {
     dispatch(removeStream(streamId));
@@ -174,18 +165,6 @@ const RightSideButtons = ({ md, handleNew, handleSave, handleDelete }) => {
   return (
     <div className="d-flex flex-wrap my-4">
       <div className="d-flex flex-column">
-        <FormGroup className="mb-3">
-          <Form.Label className="font-weight-bold">
-            Files path (#Nodes: {nodes.length})
-          </Form.Label>
-          <Form.Control
-            className="py-2"
-            type="text"
-            placeholder="Enter path of files directory"
-            value={filesPath}
-            onChange={(e) => dispatch(setFilesPathThunk(e.target.value))}
-          />
-        </FormGroup>
         <FormGroup className="mb-3">
           <Form.Label className="font-weight-bold">Node Name</Form.Label>
           <Form.Control
