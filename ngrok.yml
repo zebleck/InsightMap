@@ -3,7 +3,7 @@ authtoken: 2VCQ151yUlVmk0md5b0nxp97Xsk_DQsAAKbybdQXkxHQg7r8
 tunnels:
   app:
     proto: http
-    addr: 3000
+    addr: 3001
   api:
     proto: http
-    addr: 5000
+    addr: 5001

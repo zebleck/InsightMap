@@ -8,7 +8,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: "http://localhost:5001",
 });
 
 const sanitizeNodename = (nodeName: string) => {

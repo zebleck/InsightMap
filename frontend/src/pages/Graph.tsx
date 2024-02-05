@@ -12,7 +12,7 @@ const Graph: React.FC = () => {
 
   useEffect(() => {
     // Fetch graph data from your Flask API
-    axios.get("http://localhost:5000/graph").then((response) => {
+    axios.get("http://localhost:5001/graph").then((response) => {
       setGraphData(response.data);
     });
   }, []);

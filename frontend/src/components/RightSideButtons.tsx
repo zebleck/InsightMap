@@ -67,7 +67,7 @@ const exportToPdf = async (currentNode, content, md) => {
   // Replace image links with data URLs
   while ((match = imageRegex.exec(content)) !== null) {
     const [, imageHash] = match;
-    const url = `http://localhost:5000/uploaded_images/${imageHash}`;
+    const url = `http://localhost:5001/uploaded_images/${imageHash}`;
     const dataURL = await fetchImageAsDataURL(url);
     markdownContentWithDataURLs = markdownContentWithDataURLs.replace(
       match[0],

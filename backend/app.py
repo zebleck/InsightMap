@@ -81,6 +81,16 @@ def get_edges(node):
     return edges
 
 
+def validate_edges(edges, nodes):
+    validated_edges = []
+
+    for edge in edges:
+        if edge["to"] in [node["label"] for node in nodes]:
+            validated_edges.append(edge)
+
+    return validated_edges
+
+
 """
 -----------------------
 File endpoints
@@ -148,7 +158,7 @@ def fetch_graph():
         node = get_node(node_name)
         nodes.append(node)
 
-        edges += get_edges(node)
+        edges += validate_edges(get_edges(node), nodes)
 
     return jsonify({"nodes": nodes, "edges": edges})
 
@@ -427,4 +437,4 @@ def request_sse():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5001)

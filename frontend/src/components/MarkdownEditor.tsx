@@ -70,7 +70,7 @@ const MarkdownEditor = ({ md }) => {
           const filename = srcAttr[1].substring(4); // Remove 'img:' prefix
           token.attrs[
             srcIndex
-          ][1] = `http://localhost:5000/uploaded_images/${filename}`;
+          ][1] = `http://localhost:5001/uploaded_images/${filename}`;
         }
 
         // Add width to token attributes
@@ -232,7 +232,7 @@ const MarkdownEditor = ({ md }) => {
         formData.append("image", file);
 
         const response = await axios.post(
-          "http://localhost:5000/uploadImage",
+          "http://localhost:5001/uploadImage",
           formData,
           {
             headers: {

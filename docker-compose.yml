@@ -7,7 +7,7 @@ services:
       - ./frontend:/app
     command: bash -c "npm install && npm start"
     ports:
-      - '3000:3000'
+      - '3001:3000'
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
@@ -19,6 +19,6 @@ services:
       - ./backend:/app
       - ${FILES_PATH}:/app/files
     ports:
-      - '5000:5000'
+      - '5001:5001'
     environment:
       - FLASK_ENV=development
