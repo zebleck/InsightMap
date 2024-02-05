@@ -10,7 +10,8 @@ export const useHandleLoad = () => {
   const handleLoad = (e, nodeName) => {
     e.preventDefault();
     navigate(`/${nodeName}`);
-    dispatch(fetchNode(nodeName));
+    if (nodeName)
+      dispatch(fetchNode(nodeName));
   };
 
   return handleLoad;
